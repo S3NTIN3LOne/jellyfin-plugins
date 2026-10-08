@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <JellyfinVersion Condition="'$(JellyfinVersion)' == ''">12.2.0</JellyfinVersion>
+        <JellyfinNugetVersion Condition="!$(JellyfinVersion.StartsWith('10.11'))">$(JellyfinVersion)</JellyfinNugetVersion>
+        <JellyfinNugetVersion Condition="$(JellyfinVersion.StartsWith('10.11'))">$(JellyfinVersion)</JellyfinNugetVersion>
+        <TargetFramework Condition="$(JellyfinVersion.StartsWith('10.11'))">net9.0</TargetFramework>
+        <TargetFramework Condition="$(JellyfinVersion.StartsWith('12.'))">net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <RepositoryUrl>https://github.com/IAmParadox27/jellyfin-plugin-file-transformation</RepositoryUrl>
+        <RepositoryType>GitHub</RepositoryType>
+        <Description>Jellyfin plugin to allow other plugin developers to intercept and change the delivered web content of jellyfin-web without requiring custom jellyfin-web builds or injected javascript.
+
+This plugin is based on a Pull Request (https://github.com/jellyfin/jellyfin/pull/9095) by https://github.com/JPVenson. Most of the code here was written by him, though adapted to function in a plugin context rather than a native change.</Description>
+
+        <Version>3.0.0.1</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Jellyfin.Model" Version="$(JellyfinNugetVersion)" />
+        <PackageReference Include="Jellyfin.Controller" Version="$(JellyfinNugetVersion)" />
+        <PackageReference Include="Jellyfin.Data" Version="$(JellyfinNugetVersion)" />
+        <PackageReference Include="Jellyfin.Extensions" Version="$(JellyfinNugetVersion)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Configuration\config.html" />
+        <EmbeddedResource Include="Configuration\config.html" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" />
+        <None Include="..\logo.png" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
+    <Target Name="GenerateAssemblyMetadata_JellyfinVersion" BeforeTargets="BeforeCompile">
+        <ItemGroup>
+            <AssemblyAttribute Include="Jellyfin.Plugin.FileTransformation.Attributes.JellyfinVersionAttribute">
+                <_Parameter1>$(JellyfinVersion)</_Parameter1>
+            </AssemblyAttribute>
+        </ItemGroup>
+        <WriteCodeFragment Language="C#"
+                           OutputFile="$(IntermediateOutputPath)AssemblyMetadata.g.cs"
+                           AssemblyAttributes="@(AssemblyAttribute)" />
+        <ItemGroup>
+            <Compile Include="$(IntermediateOutputPath)AssemblyMetadata.g.cs" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="PostBuild" AfterTargets="Build" Condition="Exists('C:\ProgramData\Jellyfin\Server_10_11\plugins\FileTransformation')">
+        <Exec Condition="$(JellyfinVersion.StartsWith('12.'))" Command="xcopy &quot;$(OutDir)$(TargetName).*&quot; &quot;C:\ProgramData\Jellyfin\Server_12\plugins\FileTransformation&quot; /y" />
+        <Exec Condition="$(JellyfinVersion.StartsWith('10.11'))" Command="xcopy &quot;$(OutDir)$(TargetName).*&quot; &quot;C:\ProgramData\Jellyfin\Server_10_11\plugins\FileTransformation&quot; /y" />
+    </Target>
+
+</Project>

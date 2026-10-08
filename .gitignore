@@ -1,0 +1,5 @@
+.build-tools/
+artifacts/
+.idea/
+**/bin/
+**/obj/
