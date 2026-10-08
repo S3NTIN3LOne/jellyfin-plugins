@@ -73,6 +73,39 @@
             <div id="web-config" class="jellyfin-tab-content" style="display: none;">
                 <div>
                     <div class="inputContainer">
+                        <label class="inputLabel" for="selectionMode">Content selection</label>
+                        <select id="selectionMode" data-id="selectionMode" is="emby-select" class="emby-select">
+                            <option value="Client">Client selection / playlist (existing behavior)</option>
+                            <option value="Random">Random (server managed)</option>
+                            <option value="Latest">Recently added (newest first)</option>
+                        </select>
+                        <div class="fieldDescription">Server-managed modes override client category, library and count preferences, and ignore playlists/list.txt. Restart the client app or reload the page after saving.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel" for="itemCount">Number of items</label>
+                        <input id="itemCount" data-id="itemCount" type="number" min="1" max="500" step="1" required is="emby-input" class="emby-input" />
+                        <div class="fieldDescription">Maximum total across selected libraries in server-managed modes. Recently added also includes watched titles and titles without logos.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel" for="mediaCategory">Category</label>
+                        <select id="mediaCategory" data-id="mediaCategory" is="emby-select" class="emby-select">
+                            <option value="All">Movies and series</option>
+                            <option value="Movies">Movies only</option>
+                            <option value="Series">Series only</option>
+                        </select>
+                        <div class="fieldDescription">For series, recently added refers to when the series was added, not its newest episode.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel" for="libraryNames">Libraries (one name per line)</label>
+                        <textarea id="libraryNames" data-id="libraryNames" rows="4" class="emby-input"></textarea>
+                        <div class="fieldDescription">Optional library names, such as Movies or Kids. Empty means all libraries the current user can access. Unavailable libraries are skipped; no matches shows no bar.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel" for="tvHeightPercent">TV bar height (% of screen)</label>
+                        <input id="tvHeightPercent" data-id="tvHeightPercent" type="number" min="30" max="60" step="1" required is="emby-input" class="emby-input" />
+                        <div class="fieldDescription">Default: 40%. Applies to Jellyfin TV layout and LG webOS. TV uses a compact view without the plot summary.</div>
+                    </div>
+                    <div class="inputContainer">
                         <label class="inputLabel inputLabelUnfocused" for="numShuffleInterval">Shuffle Interval</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numShuffleInterval"></label>
                         <input id="numShuffleInterval" type="number" is="emby-input" class="emby-input" data-id="numShuffleInterval" />
@@ -207,6 +240,8 @@
                 },
                 saveConfig: function (e) {
                     e.preventDefault();
+                    if (!document.querySelector('#itemCount').reportValidity() ||
+                        !document.querySelector('#tvHeightPercent').reportValidity()) return;
                     Dashboard.showLoadingMsg();
                     const config = {
                         Enabled: document.querySelector("[data-id=enabledSelect]").value,
@@ -215,6 +250,11 @@
                         AvatarsPlaylist: document.querySelector("[data-id=txtAvatarsPlaylist]").value,
                         VersionString: document.querySelector("[data-id=txtVersionString]").value,
                         WebConfig: {
+                            SelectionMode: document.querySelector('#selectionMode').value,
+                            ItemCount: parseInt(document.querySelector('#itemCount').value, 10),
+                            MediaCategory: document.querySelector('#mediaCategory').value,
+                            LibraryNames: document.querySelector('#libraryNames').value.split(/\r?\n/).map(name => name.trim()).filter(Boolean),
+                            TvHeightPercent: parseInt(document.querySelector('#tvHeightPercent').value, 10),
                             ImageSvgs: {
                                 ImdbLogo: null,
                                 TomatoLogo: null,
@@ -250,6 +290,12 @@
                     Dashboard.showLoadingMsg();
                     window.ApiClient.getPluginConfiguration(MediaBarConfig.pluginId)
                         .then(function (config) {
+                            document.querySelector('#selectionMode').value = config.WebConfig.SelectionMode || 'Client';
+                            document.querySelector('#itemCount').value = config.WebConfig.ItemCount || 10;
+                            document.querySelector('#mediaCategory').value = config.WebConfig.MediaCategory || 'All';
+                            document.querySelector('#libraryNames').value = (config.WebConfig.LibraryNames || []).join('\n');
+                            document.querySelector('#tvHeightPercent').value = config.WebConfig.TvHeightPercent || 40;
+                            document.querySelector('[data-id=chkSyncPageBackdrop]').checked = config.WebConfig.SyncPageBackdrop;
                             document.querySelector("[data-id=enabledSelect]").value = config.Enabled;
                             document.querySelector("[data-id=chkUseAvatarsFile]").checked = config.UseAvatarsFile;
                             document.querySelector("[data-id=chkAllowUnpinnedRefs]").checked = config.AllowUnpinnedRefs;

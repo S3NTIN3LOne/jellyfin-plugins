@@ -20,6 +20,27 @@ and [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-t
 Upstream licenses are preserved in each plugin directory and release ZIP.
 Slideshow credits are preserved in the JavaScript and CSS files.
 
+## Media Bar settings (3.0.0.2)
+
+Under Dashboard > Plugins > Media Bar > Web Config:
+
+- TV bar height defaults to 40% (adjustable 30-60%) on LG webOS and TV layout.
+- Content selection can remain client-controlled or use server-managed Random
+  or Recently added modes. Set a total count, movies/series category and optional
+  library names (one per line). Empty means all accessible libraries.
+- Recently added sorts by creation date, includes watched titles and titles
+  without logos, and ignores saved shuffle order and playlists. For series it
+  uses the series creation date, not the newest episode date.
+- Server-managed selections take priority over local preferences. Missing or
+  inaccessible library names never fall back to all content.
+
+Save settings, then restart the TV app or reload the browser. Use `embedded`
+assets to receive these features. File Transformation remains at 3.0.0.1.
+
+Run selection tests with `node --test tests/mediabar.test.cjs`. The optional
+`node tests/mediabar-layout.cjs` check requires Playwright and Microsoft Edge
+and checks CSS sizing in a desktop browser; it does not emulate webOS.
+
 ## Build
 
 Install the .NET 10 SDK. Media Bar also requires `slideshowpure.js` and
@@ -60,12 +81,12 @@ that `/MediaBar/slideshowpure.js` and `/MediaBar/slideshowpure.css` return 200
 
 Run `./scripts/Prepare-Release.ps1 -Repository S3NTIN3LOne/jellyfin-plugins` with the actual
 public GitHub repository name. Use `-Dotnet ./.build-tools/dotnet/dotnet.exe`
-to select the local SDK when necessary. The script builds version `3.0.0.1`,
+to select the local SDK when necessary. The script builds each plugin version from its project file,
 checks assembly versions and ZIP contents, and generates `manifest.json` with
 Jellyfin-compatible MD5 checksums and target ABI `12.2.0.0`.
 
-Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.1-jellyfin-12.2/`
-as assets of the GitHub release tagged `v3.0.0.1-jellyfin-12.2`. Use
+Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.2-jellyfin-12.2/`
+as assets of the GitHub release tagged `v3.0.0.2-jellyfin-12.2`. Use
 `RELEASE-NOTES.md` for the release description. The repository must be public
 so Jellyfin can fetch the manifest and packages without GitHub authentication.
 

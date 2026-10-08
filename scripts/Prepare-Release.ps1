@@ -7,8 +7,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$version = '3.0.0.1'
-$tag = "v$version-jellyfin-12.2"
+$releaseVersion = '3.0.0.2'
+$tag = "v$releaseVersion-jellyfin-12.2"
 $output = Join-Path $root "artifacts/$tag"
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 Add-Type -AssemblyName System.IO.Compression
@@ -35,6 +35,8 @@ $plugins = @(
 $manifest = @()
 foreach ($plugin in $plugins) {
     $projectDir = Join-Path $root "$($plugin.Directory)/$($plugin.Assembly)"
+    $project = [xml](Get-Content (Join-Path $projectDir "$($plugin.Assembly).csproj") -Raw)
+    $version = ([version]$project.Project.PropertyGroup.Version).ToString()
     & $Dotnet build (Join-Path $projectDir "$($plugin.Assembly).csproj") -c Release --nologo
     if ($LASTEXITCODE -ne 0) { throw "Build failed: $($plugin.Name)" }
     $dll = Join-Path $projectDir "bin/Release/net10.0/$($plugin.Assembly).dll"
@@ -72,7 +74,7 @@ foreach ($plugin in $plugins) {
             category = 'General'
             versions = @([ordered]@{
                 version = $version
-                changelog = 'Built against Jellyfin 12.2.0. Media Bar includes the supplied slideshow assets. Install both plugins and restart Jellyfin.'
+                changelog = if ($plugin.Name -eq 'Media Bar') { 'Compact configurable TV layout; server-managed random or recently added content, item count, categories and libraries. Restart client apps after updating.' } else { 'File Transformation for Jellyfin 12.2.0 (unchanged).' }
                 targetAbi = '12.2.0.0'
                 sourceUrl = "https://github.com/$Repository/releases/download/$tag/$asset"
                 checksum = $checksum

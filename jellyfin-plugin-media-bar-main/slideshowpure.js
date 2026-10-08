@@ -29,6 +29,9 @@ const CONFIG = {
 
   // library display names the bar may draw from, e.g. ["Movies","4K Movies"]. Empty = all.
   libraries: [],
+  selectionMode: "Client",
+  mediaCategory: "All",
+  tvHeightPercent: 40,
 
   // library display names allowed to autoplay trailers. Empty = wherever trailers are otherwise enabled.
   trailerLibraries: [],
@@ -135,6 +138,9 @@ const STORED_CONFIG_KEY = "mediabar.config";
 const STORED_CONFIG_VERSION = 1;
 
 const CONFIG_RULES = {
+  selectionMode: ["Client", "Random", "Latest"],
+  mediaCategory: ["All", "Movies", "Series"],
+  tvHeightPercent: [30, 60],
   shuffleInterval: [2000, 600000],
   retryInterval: [50, 10000],
   minSwipeDistance: [10, 400],
@@ -165,6 +171,8 @@ const CONFIG_RULES = {
 };
 
 const STRUCTURAL_CONFIG_KEYS = new Set([
+  "selectionMode",
+  "mediaCategory",
   "layout",
   "maxItems",
   "maxMovies",
@@ -354,12 +362,32 @@ const clearStoredConfig = () => {
   }
 };
 
-applyConfig(window.MediaBarConfig, {
+const serverConfig = window.MediaBarServerConfig || window.MediaBarConfig;
+applyConfig(serverConfig, {
   trusted: true,
   sentinel: -1,
   label: "plugin",
 });
 applyConfig(window.SlideshowConfig, { trusted: true, label: "index.html" });
+
+// Apply server selection before starting or restoring client preferences.
+// A server-managed selection must also bypass list.txt and client quotas.
+if (serverConfig) {
+  if (serverConfig.MaxTvShows !== undefined) {
+    applyConfig({ maxSeries: serverConfig.MaxTvShows }, { trusted: true, sentinel: -1 });
+  }
+  if (CONFIG.selectionMode !== "Client") {
+    applyConfig({
+      maxItems: Math.floor(Number(serverConfig.ItemCount) || 10),
+      maxMovies: 0,
+      maxSeries: 0,
+      libraries: serverConfig.LibraryNames || [],
+      lock: ["selectionMode", "mediaCategory", "maxItems", "maxMovies", "maxSeries", "libraries"],
+    }, { trusted: true, label: "server selection" });
+  }
+  lockedConfigKeys.add("selectionMode");
+  lockedConfigKeys.add("tvHeightPercent");
+}
 
 const CONFIG_SERVER_DEFAULTS = JSON.parse(JSON.stringify(CONFIG));
 
@@ -1365,7 +1393,7 @@ const ApiUtils = {
   itemFieldsQuery() {
     return [
 
-      "fields=Overview,Genres,Taglines,RemoteTrailers,ChildCount,LocalTrailerCount",
+      "fields=Overview,Genres,Taglines,RemoteTrailers,ChildCount,LocalTrailerCount,DateCreated",
       "enableUserData=true",
       "enableImageTypes=Backdrop,Logo,Primary",
       "enableTotalRecordCount=false",
@@ -1543,10 +1571,12 @@ const ApiUtils = {
   },
 
   async fetchItemPage(types, limit, library = null) {
+    const latest = CONFIG.selectionMode === "Latest";
     const response = await fetch(
       `${STATE.jellyfinData.serverAddress}/Items` +
-        `?IncludeItemTypes=${types}&Recursive=true&hasOverview=true` +
-        `&imageTypes=Logo,Backdrop&SortBy=Random&isPlayed=False` +
+        `?IncludeItemTypes=${types}&Recursive=true&UserId=${encodeURIComponent(STATE.jellyfinData.userId)}` +
+        (latest ? "&SortBy=DateCreated,SortName&SortOrder=Descending" :
+          "&hasOverview=true&imageTypes=Logo,Backdrop&SortBy=Random&isPlayed=False") +
         `&Limit=${limit}&${this.itemFieldsQuery()}` +
         (library ? `&ParentId=${encodeURIComponent(library.Id)}` : ""),
       {
@@ -1572,7 +1602,7 @@ const ApiUtils = {
 
     const { Items: items = [] } = await response.json();
 
-    const withLogos = items.filter((item) => item.ImageTags && item.ImageTags.Logo);
+    const withLogos = latest ? items : items.filter((item) => item.ImageTags && item.ImageTags.Logo);
 
     if (library) withLogos.forEach((item) => (item.LibraryId = library.Id));
 
@@ -1585,6 +1615,16 @@ const ApiUtils = {
     const pages = await Promise.all(
       libraries.map((library) => this.fetchItemPage(types, limit, library)),
     );
+
+    if (CONFIG.selectionMode === "Latest") {
+      const unique = new Map();
+      pages.flat().forEach((item) => {
+        if (!unique.has(item.Id)) unique.set(item.Id, item);
+      });
+      return Array.from(unique.values())
+        .sort((a, b) => (Date.parse(b.DateCreated) || 0) - (Date.parse(a.DateCreated) || 0))
+        .slice(0, limit);
+    }
 
     const merged = [];
     const longest = Math.max(0, ...pages.map((page) => page.length));
@@ -1659,6 +1699,8 @@ const ApiUtils = {
       const seriesQuota = Math.max(0, CONFIG.maxSeries || 0);
 
       let libraries = await this.resolveLibraries(CONFIG.libraries);
+      // Never fall back to all libraries when a configured restriction cannot be resolved.
+      if (CONFIG.libraries.length && !libraries.length) return [];
 
       const trailerLibraries = await this.resolveLibraries(
         CONFIG.trailerLibraries,
@@ -1668,6 +1710,12 @@ const ApiUtils = {
       );
       if (!libraries.length && trailerLibraries.length) {
         libraries = await this.fetchViews();
+      }
+
+      if (CONFIG.selectionMode !== "Client") {
+        const types = CONFIG.mediaCategory === "Movies" ? "Movie" :
+          CONFIG.mediaCategory === "Series" ? "Series" : "Movie,Series";
+        return await this.fetchAcrossLibraries(types, CONFIG.maxItems, libraries);
       }
 
       if (!movieQuota && !seriesQuota) {
@@ -2343,12 +2391,12 @@ const SlideCreator = {
 
     backdropContainer.append(backdrop, backdropOverlay);
 
-    const logo = SlideUtils.createElement("img", {
+    const logo = item.ImageTags?.Logo ? SlideUtils.createElement("img", {
       className: "logo high-quality",
       src: this.buildImageUrl(item, "Logo", undefined, serverAddress, 40),
       alt: item.Name,
       loading: "eager",
-    });
+    }) : SlideUtils.createElement("div", { className: "logo-title", textContent: item.Name });
 
     const logoContainer = SlideUtils.createElement("div", {
       className: "logo-container",
@@ -3448,6 +3496,10 @@ const SlideshowManager = {
   SESSION_ORDER_KEY: "slideshowpure_order",
 
   applySessionOrder(items) {
+    if (CONFIG.selectionMode === "Latest") {
+      STATE.slideshow.resumeIndex = 0;
+      return items;
+    }
 
     if (!CONFIG.rememberOrderForSession) {
       return SlideUtils.mixTypesInHead(
@@ -3493,7 +3545,7 @@ const SlideshowManager = {
   },
 
   persistSessionOrder(items, index) {
-    if (!CONFIG.rememberOrderForSession) return;
+    if (CONFIG.selectionMode === "Latest" || !CONFIG.rememberOrderForSession) return;
     try {
       sessionStorage.setItem(
         this.SESSION_ORDER_KEY,
@@ -3505,7 +3557,7 @@ const SlideshowManager = {
   },
 
   persistSessionIndex(index) {
-    if (!CONFIG.rememberOrderForSession) return;
+    if (CONFIG.selectionMode === "Latest" || !CONFIG.rememberOrderForSession) return;
     try {
       const stored = JSON.parse(
         sessionStorage.getItem(this.SESSION_ORDER_KEY) || "null",
@@ -3739,7 +3791,7 @@ const SlideshowManager = {
 
       mark("items-fetch-start");
 
-      const listed = await ApiUtils.fetchListEntries();
+      const listed = CONFIG.selectionMode === "Client" ? await ApiUtils.fetchListEntries() : EMPTY_LIST;
       let items =
         listed.ids.length || listed.filters.length
           ? await ApiUtils.fetchListedItems(listed)
@@ -3766,7 +3818,7 @@ const SlideshowManager = {
 
       if (!itemIds.length) {
         console.warn(
-          "Slideshow: no items with a Logo image were returned; nothing to show.",
+          "Slideshow: no matching items were returned; nothing to show.",
         );
         SlideUtils.getOrCreateSlidesContainer().style.display = "none";
         return;
@@ -3807,6 +3859,9 @@ const LayoutSync = {
   },
 
   update() {
+    const tv = !!document.querySelector(".layout-tv") || /webos|web0s|netcast/i.test(navigator.userAgent);
+    document.documentElement.classList.toggle("sspure-tv", tv);
+    this.publish("--slideshow-tv-height", `${CONFIG.tvHeightPercent}vh`);
     const page = document.querySelector(".page");
     if (!page) return;
 
@@ -3906,6 +3961,9 @@ const SettingsPanel = {
         ["even", "Even mix"],
       ],
       read: () => {
+        if (CONFIG.selectionMode !== "Client") {
+          return CONFIG.mediaCategory === "Movies" ? "movies" : CONFIG.mediaCategory === "Series" ? "series" : "all";
+        }
         const movies = CONFIG.maxMovies;
         const series = CONFIG.maxSeries;
         if (!movies && !series) return "all";
@@ -4368,9 +4426,9 @@ const slidesInit = async () => {
   try {
     console.log("🌟 Initializing Enhanced Jellyfin Slideshow");
 
-    await SlideshowManager.loadSlideshowData();
-
     LayoutSync.init();
+
+    await SlideshowManager.loadSlideshowData();
 
     SlideshowManager.initTouchEvents();
     SlideshowManager.initHoverPause();

@@ -35,6 +35,13 @@
   );
 }
 
+.logo-title {
+  font-size: clamp(1.4rem, 3vw, 3rem);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .backdrop.animate {
   animation:
     frostedGlass 1.2s cubic-bezier(0.4, 0, 0.2, 1),
@@ -2242,4 +2249,44 @@
   #slides-container .ss-chrome {
     transition: none;
   }
+}
+
+/* Compact TV hero: keep the library rows visible on webOS and Jellyfin TV layout. */
+:root.sspure-tv {
+  --slideshow-height: var(--slideshow-tv-height, 40vh);
+  --slideshow-content-top: var(--slideshow-tv-height, 40vh);
+}
+
+:root.sspure-tv #slides-container {
+  --plate-logo-height: 10vh;
+  --mq-logo-height: 10vh;
+  --mq-control: 5vh;
+  --mq-spec: 1.5vh;
+}
+
+:root.sspure-tv #slides-container .slide-content {
+  top: auto;
+  bottom: 5vh;
+  max-height: calc(var(--slideshow-tv-height, 40vh) - 12vh);
+  gap: 1vh;
+  width: 60%;
+}
+
+:root.sspure-tv #slides-container .logo-container {
+  height: 10vh;
+  flex: 0 0 auto;
+}
+
+:root.sspure-tv #slides-container .logo {
+  max-height: 10vh;
+}
+
+:root.sspure-tv #slides-container .plot-container,
+:root.sspure-tv #slides-container .plate-eyebrow,
+:root.sspure-tv #slides-container .plate-specs {
+  display: none;
+}
+
+:root.sspure-tv #slides-container .dots-container {
+  bottom: 2vh;
 }

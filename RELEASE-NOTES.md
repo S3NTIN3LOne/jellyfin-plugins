@@ -1,26 +1,44 @@
-# Media Bar and File Transformation 3.0.0.1 for Jellyfin 12.2
+# Media Bar 3.0.0.2 for Jellyfin 12.2
 
-Both plugins are built against Jellyfin 12.2.0 and target .NET 10.
+Media Bar now defaults to a compact 40% screen height on LG webOS and Jellyfin
+TV layout, so library rows remain visible. The height is adjustable from 30%
+to 60% in Dashboard > Plugins > Media Bar > Web Config. TV layout omits the
+plot summary and reduces logo size while preserving playback controls.
 
-- Updated Jellyfin package references and generated version metadata.
-- Media Bar includes the supplied slideshow JavaScript and CSS as embedded resources.
-- Release ZIPs contain the plugin DLL, logo and upstream license. Jellyfin's own assemblies are not bundled.
-- Both Release builds are checked before packaging; ZIPs include MD5 checksums in the repository manifest.
+## Server-managed content
 
-## Installation
+In Media Bar > Web Config, choose:
 
-Add this URL under Dashboard > Plugins > Repositories in Jellyfin:
+- Client selection: preserves existing client preferences and playlists.
+- Random: server-managed selection of random unwatched titles with logos.
+- Recently added: newest movies/series first, including watched titles and
+  titles without logos. Titles without logos display their name instead.
 
-```text
+Set the total item count (1-500), category (movies, series or both), and optional
+library names (one per line). These server-managed modes override local
+selection settings and bypass playlists/list.txt. Only libraries accessible
+to the current user are queried. Missing library names do not broaden the
+selection. For series, the date is when the series was added, not when its
+latest episode was added.
+
+Configuration is now available before slideshow initialization, avoiding the
+previous race between initial loading and server settings.
+
+## Update
+
+The existing repository URL remains valid:
+
 https://github.com/S3NTIN3LOne/jellyfin-plugins/releases/latest/download/manifest.json
-```
 
-Install **File Transformation** and **Media Bar** from
-the catalog, then restart Jellyfin. Leave Media Bar's asset version set to
-`embedded`.
+Update Media Bar to 3.0.0.2, restart Jellyfin, and fully restart the TV app or
+reload browser clients. Keep the asset version set to `embedded`.
+File Transformation remains at 3.0.0.1 and is included unchanged.
 
-The plugins have been compiled against Jellyfin 12.2.0. Runtime verification
-on a running Jellyfin 12.2 server remains outstanding.
+## Validation
 
-Original plugin author: IAmParadox27. Slideshow credits are preserved in the
-embedded assets.
+- Both Release builds: zero warnings or errors.
+- Seven automated selection/configuration tests passed.
+- CSS layout checks in headless Edge at 1920x1080: compact TV sizing and visible
+  controls in Classic, Plate and Marquee; desktop sizing remains unchanged.
+- An actual LG webOS device and a running Jellyfin server were not available
+  for runtime verification.

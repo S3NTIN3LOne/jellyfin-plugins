@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace Jellyfin.Plugin.MediaBar.Helpers
 {
@@ -97,9 +98,12 @@ namespace Jellyfin.Plugin.MediaBar.Helpers
 
             string importedHtml = reader
                 .ReadToEnd()
-                .Replace("{{AssetBaseUrl}}", ResolveAssetBaseUrl());
+                .Replace("{{AssetBaseUrl}}", ResolveAssetBaseUrl())
+                .Replace("{{ServerConfig}}", JsonConvert.SerializeObject(
+                    MediaBarPlugin.Instance.Configuration.WebConfig,
+                    new JsonSerializerSettings { StringEscapeHandling = StringEscapeHandling.EscapeHtml }));
 
-            string regex = Regex.Replace(payload.Contents!, "(</head>)", $"{importedHtml}$1");
+            string regex = Regex.Replace(payload.Contents!, "(</head>)", match => importedHtml + match.Value);
 
             return regex;
         }
