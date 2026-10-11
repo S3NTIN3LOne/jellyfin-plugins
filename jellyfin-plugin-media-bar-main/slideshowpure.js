@@ -3836,7 +3836,8 @@ const SlideshowManager = {
         }
       }, CONFIG.shuffleInterval);
       STATE.slideshow.slideInterval.stop();
-      STATE.slideshow.slideInterval = null; // Ensure that updateCurrentSlide doesn't restart the timer
+      // Keep the timer: updateCurrentSlide starts it once the preview is ready,
+      // or resumes it after a trailer fails. Clearing it strands the first slide.
 
       await this.updateCurrentSlide(STATE.slideshow.resumeIndex || 0);
     } catch (error) {

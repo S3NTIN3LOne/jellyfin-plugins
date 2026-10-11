@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$releaseVersion = '3.0.0.2'
+$releaseVersion = '3.0.0.3'
 $tag = "v$releaseVersion-jellyfin-12.2"
 $output = Join-Path $root "artifacts/$tag"
 New-Item -ItemType Directory -Path $output -Force | Out-Null
@@ -74,7 +74,7 @@ foreach ($plugin in $plugins) {
             category = 'General'
             versions = @([ordered]@{
                 version = $version
-                changelog = if ($plugin.Name -eq 'Media Bar') { 'Compact configurable TV layout; server-managed random or recently added content, item count, categories and libraries. Restart client apps after updating.' } else { 'File Transformation for Jellyfin 12.2.0 (unchanged).' }
+                changelog = if ($plugin.Name -eq 'Media Bar') { 'Fix automatic preview advancement: retain the slide timer after loading. Explicit pause, trailer playback and page visibility remain respected. Restart server and client apps after updating.' } else { 'File Transformation for Jellyfin 12.2.0 (unchanged).' }
                 targetAbi = '12.2.0.0'
                 sourceUrl = "https://github.com/$Repository/releases/download/$tag/$asset"
                 checksum = $checksum
