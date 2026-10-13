@@ -128,6 +128,9 @@ test('server-managed selection bypasses playlists and list.txt', async () => {
 });
 
 test('TV sizing detects webOS and leaves desktop unchanged', () => {
+  const defaults = load({}, {}, 'Web0S');
+  defaults.context.layoutSync.update();
+  assert.equal(defaults.styles['--slideshow-tv-height'], '50vh');
   const tv = load({ TvHeightPercent: 40 }, {}, 'Mozilla/5.0 (Web0S; Linux/SmartTV)');
   tv.context.layoutSync.update();
   assert.equal(tv.classes.has('sspure-tv'), true);

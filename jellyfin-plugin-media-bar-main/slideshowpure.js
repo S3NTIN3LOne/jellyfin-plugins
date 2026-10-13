@@ -31,7 +31,7 @@ const CONFIG = {
   libraries: [],
   selectionMode: "Client",
   mediaCategory: "All",
-  tvHeightPercent: 40,
+  tvHeightPercent: 50,
 
   // library display names allowed to autoplay trailers. Empty = wherever trailers are otherwise enabled.
   trailerLibraries: [],
