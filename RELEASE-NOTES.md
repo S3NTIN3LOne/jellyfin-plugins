@@ -1,4 +1,4 @@
-# Media Bar 3.0.0.3 - Seasonal recommendations and web garlands
+# Media Bar 3.0.0.5 - Seasonal recommendations and web garlands
 
 Configure **Seasonal recommendations / Saisonale Empfehlungen** in Dashboard >
 Plugins > Media Bar > Web Config. Choose Disabled (default), Halloween or Christmas.
@@ -26,14 +26,14 @@ Seasonal recommendations themselves remain available on TV.
 Use the existing repository:
 https://github.com/S3NTIN3LOne/jellyfin-plugins/releases/latest/download/manifest.json
 
-Update Media Bar to 3.0.0.3, restart Jellyfin and reload browser clients / restart
+Update Media Bar to 3.0.0.5, restart Jellyfin and reload browser clients / restart
 TV apps. Keep asset version set to `embedded`. File Transformation remains at
 3.0.0.1 and is included unchanged.
 
 ## Validation
 
 - Both Release builds: zero warnings or errors.
-- 12 automated selection/configuration tests passed, including seasonal filters,
+- 13 automated selection/configuration tests passed, including seasonal filters,
   user/library scope, deduplication, count limits and no unrelated fallback.
 - Browser checks passed for Disabled/Halloween/Christmas across web, TV layout
   and a webOS user agent, including animation, reduced motion and mode changes.

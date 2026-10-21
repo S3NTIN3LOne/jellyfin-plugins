@@ -20,11 +20,11 @@ and [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-t
 Upstream licenses are preserved in each plugin directory and release ZIP.
 Slideshow credits are preserved in the JavaScript and CSS files.
 
-## Media Bar settings (3.0.0.3)
+## Media Bar settings (3.0.0.5)
 
 Under Dashboard > Plugins > Media Bar > Web Config:
 
-- TV bar height defaults to 40% (adjustable 30-60%) on LG webOS and TV layout.
+- TV bar height defaults to 50% (adjustable 30-60%) on LG webOS and TV layout.
 - Content selection can remain client-controlled or use server-managed Random
   or Recently added modes. Set a total count, movies/series category and optional
   library names (one per line). Empty means all accessible libraries.
@@ -97,8 +97,8 @@ to select the local SDK when necessary. The script builds each plugin version fr
 checks assembly versions and ZIP contents, and generates `manifest.json` with
 Jellyfin-compatible MD5 checksums and target ABI `12.2.0.0`.
 
-Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.3-jellyfin-12.2/`
-as assets of the GitHub release tagged `v3.0.0.3-jellyfin-12.2`. Use
+Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.5-jellyfin-12.2/`
+as assets of the GitHub release tagged `v3.0.0.5-jellyfin-12.2`. Use
 `RELEASE-NOTES.md` for the release description. The repository must be public
 so Jellyfin can fetch the manifest and packages without GitHub authentication.
 

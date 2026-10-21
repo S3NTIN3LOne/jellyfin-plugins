@@ -13,7 +13,7 @@ const assert = require('assert/strict');
    const button = document.querySelector('.play-button').getBoundingClientRect();
    return {height: stage.height, rows: document.querySelector('.homeSectionsContainer').getBoundingClientRect().top, contentTop: content.top, contentBottom: content.bottom, buttonBottom: button.bottom, stageBottom: stage.bottom};
   });
-  if(tv) { assert.equal(box.height,432); assert.ok(box.rows <= 450); assert.ok(box.contentTop >= 0); assert.ok(box.buttonBottom <= box.stageBottom); }
+  if(tv) { assert.equal(box.height,540); assert.ok(box.rows <= 550); assert.ok(box.contentTop >= 0); assert.ok(box.buttonBottom <= box.stageBottom); }
   else assert.equal(box.height,1080);
   console.log(tv ? 'TV' : 'Desktop', layout, JSON.stringify(box));
  }

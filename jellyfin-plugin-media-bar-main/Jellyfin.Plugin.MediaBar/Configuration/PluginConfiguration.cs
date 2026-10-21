@@ -50,7 +50,7 @@ namespace Jellyfin.Plugin.MediaBar.Configuration
         public int ItemCount { get; set; } = 10;
         public string MediaCategory { get; set; } = "All";
         public string[] LibraryNames { get; set; } = Array.Empty<string>();
-        public int TvHeightPercent { get; set; } = 40;
+        public int TvHeightPercent { get; set; } = 50;
 
         public ImageSvgs ImageSvgs { get; set; } = new ImageSvgs();
         

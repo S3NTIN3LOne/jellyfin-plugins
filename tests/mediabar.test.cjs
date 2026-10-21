@@ -28,6 +28,42 @@ function load(server = {}, stored = {}, userAgent = 'browser') {
   return { api, context, classes, styles };
 }
 
+test('loading retains the slide timer so previews can advance, pause and resume', async () => {
+  const { api, context } = load({ SelectionMode: 'Latest' });
+  const callbacks = new Map();
+  let nextId = 0;
+  context.setInterval = callback => { callbacks.set(++nextId, callback); return nextId; };
+  context.clearInterval = id => callbacks.delete(id);
+  api.ApiUtils.fetchItemsFromServer = async () => [{ Id: 'one' }, { Id: 'two' }];
+  api.SlideshowManager.createPaginationDots = () => {};
+  // Rendering starts the retained timer only when a slide is ready.
+  api.SlideshowManager.updateCurrentSlide = async () => {};
+  await api.SlideshowManager.loadSlideshowData();
+  const timer = api.STATE.slideshow.slideInterval;
+  assert.ok(timer, 'loadSlideshowData must retain the timer for updateCurrentSlide');
+  assert.equal(callbacks.size, 0, 'do not advance before rendering has completed');
+  let advances = 0;
+  api.SlideshowManager.nextSlide = () => advances++;
+  api.VisibilityObserver.wasVisible = true;
+  timer.restart();
+  const tick = () => Array.from(callbacks.values()).forEach(callback => callback());
+  tick(); tick();
+  assert.equal(advances, 2, 'more than the first preview must advance');
+  api.STATE.slideshow.isPaused = true;
+  tick();
+  api.STATE.slideshow.isPaused = false;
+  api.STATE.slideshow.isVideoPlaying = true;
+  tick();
+  assert.equal(advances, 2, 'respect explicit pause and a playing trailer');
+  api.SlideshowManager.setTrailerVisible = () => {};
+  api.SlideshowManager.onTrailerEnded('one', null);
+  assert.equal(advances, 3, 'a finished trailer advances to the next preview');
+  api.VisibilityObserver.wasVisible = false;
+  tick();
+  assert.equal(advances, 3, 'do not advance off the home page');
+  timer.stop();
+});
+
 test('server selection takes precedence over stored and runtime client preferences', () => {
   const { api } = load({ SelectionMode: 'Latest', ItemCount: 7, MediaCategory: 'Movies', LibraryNames: ['Kids'] },
     { maxItems: 100, maxMovies: 20, libraries: ['Private'], selectionMode: 'Client', mediaCategory: 'Series' });
@@ -93,6 +129,9 @@ test('server-managed selection bypasses playlists and list.txt', async () => {
 });
 
 test('TV sizing detects webOS and leaves desktop unchanged', () => {
+  const defaults = load({}, {}, 'Web0S');
+  defaults.context.layoutSync.update();
+  assert.equal(defaults.styles['--slideshow-tv-height'], '50vh');
   const tv = load({ TvHeightPercent: 40 }, {}, 'Mozilla/5.0 (Web0S; Linux/SmartTV)');
   tv.context.layoutSync.update();
   assert.equal(tv.classes.has('sspure-tv'), true);

@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$releaseVersion = '3.0.0.3'
+$releaseVersion = '3.0.0.5'
 $tag = "v$releaseVersion-jellyfin-12.2"
 $output = Join-Path $root "artifacts/$tag"
 New-Item -ItemType Directory -Path $output -Force | Out-Null
