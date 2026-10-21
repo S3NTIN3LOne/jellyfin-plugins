@@ -1,44 +1,42 @@
-# Media Bar 3.0.0.2 for Jellyfin 12.2
+# Media Bar 3.0.0.3 - Seasonal recommendations and web garlands
 
-Media Bar now defaults to a compact 40% screen height on LG webOS and Jellyfin
-TV layout, so library rows remain visible. The height is adjustable from 30%
-to 60% in Dashboard > Plugins > Media Bar > Web Config. TV layout omits the
-plot summary and reduces logo size while preserving playback controls.
+Configure **Seasonal recommendations / Saisonale Empfehlungen** in Dashboard >
+Plugins > Media Bar > Web Config. Choose Disabled (default), Halloween or Christmas.
 
-## Server-managed content
+- Halloween recommends titles with the Horror genre or Halloween tag.
+- Christmas recommends titles tagged or categorized as Christmas, Weihnachten or Xmas.
+- Add these tags using Jellyfin's metadata editor to include selected titles.
+- The configured count, category and libraries apply. Recently added keeps its
+  newest-first order; other modes select seasonal titles randomly, including
+  watched titles and titles without logos. No matches means no bar.
+- Seasonal selection overrides client selection and playlists/list.txt.
 
-In Media Bar > Web Config, choose:
+Enabling a season adds an animated garland near the top of the media bar:
+Halloween pumpkins, bats and ghosts, or Christmas baubles, stars and holly.
+The artwork is embedded SVG/CSS and requires no external image requests.
+The garland does not intercept clicks or keyboard focus. Reduced-motion
+preferences disable its animation.
 
-- Client selection: preserves existing client preferences and playlists.
-- Random: server-managed selection of random unwatched titles with logos.
-- Recently added: newest movies/series first, including watched titles and
-  titles without logos. Titles without logos display their name instead.
-
-Set the total item count (1-500), category (movies, series or both), and optional
-library names (one per line). These server-managed modes override local
-selection settings and bypass playlists/list.txt. Only libraries accessible
-to the current user are queried. Missing library names do not broaden the
-selection. For series, the date is when the series was added, not when its
-latest episode was added.
-
-Configuration is now available before slideshow initialization, avoiding the
-previous race between initial loading and server settings.
+**The garland is web-only:** no decoration nodes or animations are created in
+Jellyfin TV mode or LG webOS. Switching to TV mode removes existing decorations.
+Seasonal recommendations themselves remain available on TV.
 
 ## Update
 
-The existing repository URL remains valid:
-
+Use the existing repository:
 https://github.com/S3NTIN3LOne/jellyfin-plugins/releases/latest/download/manifest.json
 
-Update Media Bar to 3.0.0.2, restart Jellyfin, and fully restart the TV app or
-reload browser clients. Keep the asset version set to `embedded`.
-File Transformation remains at 3.0.0.1 and is included unchanged.
+Update Media Bar to 3.0.0.3, restart Jellyfin and reload browser clients / restart
+TV apps. Keep asset version set to `embedded`. File Transformation remains at
+3.0.0.1 and is included unchanged.
 
 ## Validation
 
 - Both Release builds: zero warnings or errors.
-- Seven automated selection/configuration tests passed.
-- CSS layout checks in headless Edge at 1920x1080: compact TV sizing and visible
-  controls in Classic, Plate and Marquee; desktop sizing remains unchanged.
-- An actual LG webOS device and a running Jellyfin server were not available
-  for runtime verification.
+- 12 automated selection/configuration tests passed, including seasonal filters,
+  user/library scope, deduplication, count limits and no unrelated fallback.
+- Browser checks passed for Disabled/Halloween/Christmas across web, TV layout
+  and a webOS user agent, including animation, reduced motion and mode changes.
+- Existing compact TV and desktop layout checks passed for all three layouts.
+- Artwork previews visually inspected in headless Edge.
+- No physical LG TV or running Jellyfin server was available for runtime testing.

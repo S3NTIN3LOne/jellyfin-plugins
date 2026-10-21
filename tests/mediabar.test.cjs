@@ -14,6 +14,7 @@ function load(server = {}, stored = {}, userAgent = 'browser') {
     window: { MediaBarServerConfig: server, location: { hash: '', search: '' } },
     document: {
       querySelector: () => null,
+      getElementById: () => null,
       documentElement: { classList: { toggle: (key, on) => on ? classes.add(key) : classes.delete(key) },
         style: { setProperty: (key, value) => { styles[key] = value; } } },
     },
@@ -99,4 +100,71 @@ test('TV sizing detects webOS and leaves desktop unchanged', () => {
   const desktop = load();
   desktop.context.layoutSync.update();
   assert.equal(desktop.classes.has('sspure-tv'), false);
+});
+
+test('season is disabled by default and cannot be enabled by local preferences', () => {
+  const { api } = load({}, { seasonalTheme: 'Halloween' });
+  assert.equal(api.CONFIG.seasonalTheme, 'None');
+});
+
+test('season takes server category, libraries and count even in client selection mode', () => {
+  const { api } = load({ SeasonalTheme: 'Halloween', ItemCount: 6, MediaCategory: 'Movies', LibraryNames: ['Family'] },
+    { seasonalTheme: 'Christmas', maxItems: 100, libraries: ['Other'] });
+  assert.equal(api.CONFIG.selectionMode, 'Client');
+  assert.equal(api.CONFIG.seasonalTheme, 'Halloween');
+  assert.equal(api.CONFIG.maxItems, 6);
+  assert.deepEqual(Array.from(api.CONFIG.libraries), ['Family']);
+});
+
+test('Halloween queries only seasonal metadata in the selected library and includes titles without logos', async () => {
+  const { api, context } = load({ SeasonalTheme: 'Halloween', ItemCount: 3, MediaCategory: 'Movies', LibraryNames: ['Family'] });
+  api.ApiUtils.fetchViews = async () => [{ Id: 'family-id', Name: 'Family' }];
+  const requests = [];
+  context.fetch = async url => {
+    requests.push(new URL(url));
+    return { ok: true, json: async () => ({ Items: [{ Id: 'seasonal' }] }) };
+  };
+  const items = await api.ApiUtils.fetchItemsFromServer();
+  assert.equal(items.length, 1); // Genre and tag matches must not duplicate slides.
+  assert.equal(requests.length, 2);
+  assert.deepEqual(requests.map(url => url.searchParams.get('Genres') || url.searchParams.get('Tags')), ['Horror', 'Halloween']);
+  for (const url of requests) {
+    assert.equal(url.searchParams.get('ParentId'), 'family-id');
+    assert.equal(url.searchParams.get('IncludeItemTypes'), 'Movie');
+    assert.equal(url.searchParams.get('UserId'), 'user');
+    assert.equal(url.searchParams.has('isPlayed'), false);
+    assert.equal(url.searchParams.has('imageTypes'), false);
+  }
+});
+
+test('Christmas merges by newest date and total limit across metadata and libraries', async () => {
+  const { api, context } = load({ SelectionMode: 'Latest', SeasonalTheme: 'Christmas', ItemCount: 2 });
+  const requests = [];
+  context.fetch = async url => {
+    requests.push(new URL(url));
+    return { ok: true, json: async () => ({ Items: [
+      { Id: 'older', DateCreated: '2026-01-01' },
+      { Id: 'newer', DateCreated: '2026-10-21' },
+      { Id: 'middle', DateCreated: '2026-10-01' },
+    ] }) };
+  };
+  const items = await api.ApiUtils.fetchAcrossLibraries('Series', 2, [{ Id: 'a' }, { Id: 'b' }]);
+  assert.deepEqual(Array.from(items, item => item.Id), ['newer', 'middle']);
+  assert.equal(requests.length, 4);
+  requests.forEach(url => assert.equal(url.searchParams.get('Tags') || url.searchParams.get('Genres'), 'Christmas|Weihnachten|Xmas'));
+});
+
+test('empty seasonal results never trigger a nonseasonal fallback or playlist request', async () => {
+  const { api, context } = load({ SeasonalTheme: 'Christmas' });
+  api.ApiUtils.fetchListEntries = async () => { throw new Error('Season must bypass lists'); };
+  api.SlideUtils.getOrCreateSlidesContainer = () => ({ style: {} });
+  const requests = [];
+  context.fetch = async url => {
+    requests.push(new URL(url));
+    return { ok: true, json: async () => ({ Items: [] }) };
+  };
+  await api.SlideshowManager.loadSlideshowData();
+  assert.equal(requests.length, 2);
+  assert.ok(requests.every(url => url.searchParams.has('Tags') || url.searchParams.has('Genres')));
+  assert.equal(api.STATE.slideshow.totalItems, 0);
 });

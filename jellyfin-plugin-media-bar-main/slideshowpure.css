@@ -2290,3 +2290,51 @@
 :root.sspure-tv #slides-container .dots-container {
   bottom: 2vh;
 }
+/* Seasonal decoration sits above the artwork and never intercepts navigation. */
+.ss-seasonal-garland {
+  position: absolute;
+  top: clamp(4rem, 9vh, 7rem);
+  left: 0;
+  width: 100%;
+  z-index: 8;
+  pointer-events: none;
+  user-select: none;
+  color: #ebc781;
+  filter: drop-shadow(0 3px 5px rgb(0 0 0 / 0.4));
+}
+
+.ss-seasonal-garland svg {
+  display: block;
+  width: 100%;
+  height: clamp(65px, 10vw, 155px);
+}
+
+.ss-garland-cord {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.ss-seasonal-garland[data-theme="Halloween"] {
+  color: #ad91c4;
+}
+
+.ss-garland-ornament {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: ss-garland-sway 3.6s ease-in-out infinite alternate;
+}
+
+@keyframes ss-garland-sway {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(6deg); }
+}
+
+.layout-tv .ss-seasonal-garland,
+:root.sspure-tv .ss-seasonal-garland {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-garland-ornament { animation: none; }
+}

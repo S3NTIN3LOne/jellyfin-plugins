@@ -30,6 +30,7 @@ const CONFIG = {
   // library display names the bar may draw from, e.g. ["Movies","4K Movies"]. Empty = all.
   libraries: [],
   selectionMode: "Client",
+  seasonalTheme: "None",
   mediaCategory: "All",
   tvHeightPercent: 40,
 
@@ -139,6 +140,7 @@ const STORED_CONFIG_VERSION = 1;
 
 const CONFIG_RULES = {
   selectionMode: ["Client", "Random", "Latest"],
+  seasonalTheme: ["None", "Halloween", "Christmas"],
   mediaCategory: ["All", "Movies", "Series"],
   tvHeightPercent: [30, 60],
   shuffleInterval: [2000, 600000],
@@ -172,6 +174,7 @@ const CONFIG_RULES = {
 
 const STRUCTURAL_CONFIG_KEYS = new Set([
   "selectionMode",
+  "seasonalTheme",
   "mediaCategory",
   "layout",
   "maxItems",
@@ -376,16 +379,17 @@ if (serverConfig) {
   if (serverConfig.MaxTvShows !== undefined) {
     applyConfig({ maxSeries: serverConfig.MaxTvShows }, { trusted: true, sentinel: -1 });
   }
-  if (CONFIG.selectionMode !== "Client") {
+  if (CONFIG.selectionMode !== "Client" || CONFIG.seasonalTheme !== "None") {
     applyConfig({
       maxItems: Math.floor(Number(serverConfig.ItemCount) || 10),
       maxMovies: 0,
       maxSeries: 0,
       libraries: serverConfig.LibraryNames || [],
-      lock: ["selectionMode", "mediaCategory", "maxItems", "maxMovies", "maxSeries", "libraries"],
+      lock: ["selectionMode", "seasonalTheme", "mediaCategory", "maxItems", "maxMovies", "maxSeries", "libraries"],
     }, { trusted: true, label: "server selection" });
   }
   lockedConfigKeys.add("selectionMode");
+  lockedConfigKeys.add("seasonalTheme");
   lockedConfigKeys.add("tvHeightPercent");
 }
 
@@ -991,6 +995,8 @@ const SlideUtils = {
     root.classList.toggle("sspure-plate", CONFIG.layout === "plate");
     root.classList.toggle("sspure-marquee", CONFIG.layout === "marquee");
 
+    SeasonalDecorations.update(container);
+
     return container;
   },
 
@@ -1570,13 +1576,15 @@ const ApiUtils = {
     return merged;
   },
 
-  async fetchItemPage(types, limit, library = null) {
+  async fetchItemPage(types, limit, library = null, seasonalFilter = "") {
     const latest = CONFIG.selectionMode === "Latest";
+    const seasonal = CONFIG.seasonalTheme !== "None";
     const response = await fetch(
       `${STATE.jellyfinData.serverAddress}/Items` +
         `?IncludeItemTypes=${types}&Recursive=true&UserId=${encodeURIComponent(STATE.jellyfinData.userId)}` +
-        (latest ? "&SortBy=DateCreated,SortName&SortOrder=Descending" :
+        (latest ? "&SortBy=DateCreated,SortName&SortOrder=Descending" : seasonal ? "&SortBy=Random" :
           "&hasOverview=true&imageTypes=Logo,Backdrop&SortBy=Random&isPlayed=False") +
+        seasonalFilter +
         `&Limit=${limit}&${this.itemFieldsQuery()}` +
         (library ? `&ParentId=${encodeURIComponent(library.Id)}` : ""),
       {
@@ -1602,7 +1610,7 @@ const ApiUtils = {
 
     const { Items: items = [] } = await response.json();
 
-    const withLogos = latest ? items : items.filter((item) => item.ImageTags && item.ImageTags.Logo);
+    const withLogos = latest || seasonal ? items : items.filter((item) => item.ImageTags && item.ImageTags.Logo);
 
     if (library) withLogos.forEach((item) => (item.LibraryId = library.Id));
 
@@ -1610,6 +1618,20 @@ const ApiUtils = {
   },
 
   async fetchAcrossLibraries(types, limit, libraries) {
+    if (CONFIG.seasonalTheme !== "None") {
+      const filters = CONFIG.seasonalTheme === "Halloween"
+        ? ["&Genres=Horror", "&Tags=Halloween"]
+        : ["&Genres=Christmas%7CWeihnachten%7CXmas", "&Tags=Christmas%7CWeihnachten%7CXmas"];
+      const scopes = libraries.length ? libraries : [null];
+      const pages = await Promise.all(scopes.flatMap(library =>
+        filters.map(filter => this.fetchItemPage(types, limit, library, filter))));
+      const unique = new Map();
+      pages.flat().forEach(item => { if (!unique.has(item.Id)) unique.set(item.Id, item); });
+      const items = Array.from(unique.values());
+      return (CONFIG.selectionMode === "Latest"
+        ? items.sort((a, b) => (Date.parse(b.DateCreated) || 0) - (Date.parse(a.DateCreated) || 0))
+        : SlideUtils.shuffleArray(items)).slice(0, limit);
+    }
     if (!libraries.length) return await this.fetchItemPage(types, limit);
 
     const pages = await Promise.all(
@@ -1712,7 +1734,7 @@ const ApiUtils = {
         libraries = await this.fetchViews();
       }
 
-      if (CONFIG.selectionMode !== "Client") {
+      if (CONFIG.selectionMode !== "Client" || CONFIG.seasonalTheme !== "None") {
         const types = CONFIG.mediaCategory === "Movies" ? "Movie" :
           CONFIG.mediaCategory === "Series" ? "Series" : "Movie,Series";
         return await this.fetchAcrossLibraries(types, CONFIG.maxItems, libraries);
@@ -3791,7 +3813,8 @@ const SlideshowManager = {
 
       mark("items-fetch-start");
 
-      const listed = CONFIG.selectionMode === "Client" ? await ApiUtils.fetchListEntries() : EMPTY_LIST;
+      const listed = CONFIG.selectionMode === "Client" && CONFIG.seasonalTheme === "None"
+        ? await ApiUtils.fetchListEntries() : EMPTY_LIST;
       let items =
         listed.ids.length || listed.filters.length
           ? await ApiUtils.fetchListedItems(listed)
@@ -3847,6 +3870,41 @@ const SlideshowManager = {
   },
 };
 
+const SeasonalDecorations = {
+  isTv() {
+    return !!document.querySelector(".layout-tv") || /webos|web0s|netcast/i.test(navigator.userAgent);
+  },
+
+  update(container) {
+    const existing = container.querySelector(".ss-seasonal-garland");
+    if (CONFIG.seasonalTheme === "None" || this.isTv()) {
+      existing?.remove();
+      return;
+    }
+    if (existing?.dataset.theme === CONFIG.seasonalTheme) return;
+    existing?.remove();
+
+    // Decorative, self-contained vector artwork. No image downloads or focus targets.
+    const halloween = CONFIG.seasonalTheme === "Halloween";
+    const pumpkin = '<path fill="#67a74c" d="M29 15l2-10h6l-3 12z"/><ellipse cx="32" cy="34" rx="24" ry="21" fill="#f18a28"/><path d="M26 15q-12 19 0 39m12-39q12 19 0 39" fill="none" stroke="#ce5e1a" stroke-width="2"/><path fill="#342035" d="m16 31 9-8 4 9zm19 1 4-9 9 8zM20 41l7 3 5-4 5 4 7-3-5 10H26z"/>';
+    const ghost = '<path fill="#faf4e7" d="M12 53V26a20 20 0 0 1 40 0v27l-10-6-10 7-10-7z"/><ellipse cx="25" cy="28" rx="3" ry="5" fill="#342035"/><ellipse cx="40" cy="28" rx="3" ry="5" fill="#342035"/><ellipse cx="33" cy="40" rx="4" ry="5" fill="#342035"/>';
+    const bat = '<path fill="#b499dc" d="M31 24l-5-10-3 10Q9 9 2 20l4 25q9-12 19-2 7 14 14 0 10-10 19 2l4-25Q55 9 41 24l-3-10-5 10z"/><circle cx="29" cy="32" r="2" fill="#ffe1a3"/><circle cx="37" cy="32" r="2" fill="#ffe1a3"/>';
+    const bauble = '<path fill="#e9c979" d="M27 10h10v10H27z"/><circle cx="32" cy="37" r="22" fill="#cc4250"/><path d="M13 33q19 15 38 0" stroke="#f1cf82" stroke-width="5" fill="none"/><path d="M19 28q2-6 8-7" stroke="#ffe9cc" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    const star = '<path fill="#f4cd72" stroke="#ffebb1" stroke-width="2" d="m32 7 7 17 19 2-14 13 4 19-16-10-16 10 4-19L6 26l19-2z"/>';
+    const holly = '<path fill="#64ac7d" stroke="#2d7250" stroke-width="2" d="M32 35Q7 42 9 8l10 5 3-7q19 15 10 29zm1 0Q58 42 55 8l-10 5-3-7q-19 15-9 29z"/><g fill="#db4955"><circle cx="26" cy="40" r="7"/><circle cx="39" cy="40" r="7"/><circle cx="32" cy="50" r="7"/></g>';
+    const ornaments = halloween ? [pumpkin, bat, ghost] : [bauble, star, holly];
+    const garland = document.createElement("div");
+    garland.className = "ss-seasonal-garland";
+    garland.dataset.theme = CONFIG.seasonalTheme;
+    garland.setAttribute("aria-hidden", "true");
+    garland.innerHTML = `<svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMin meet" focusable="false" aria-hidden="true">
+      <path class="ss-garland-cord" d="M-20 8Q100 68 200 16Q300 68 400 16Q500 68 600 16Q700 68 800 16Q900 68 1000 16Q1100 68 1220 8"/>
+      ${Array.from({ length: 11 }, (_, i) => `<g transform="translate(${68 + i * 100} ${i % 2 ? 12 : 34})"><g class="ss-garland-ornament" style="animation-delay:-${i * 0.37}s"><path d="M32 0v13" stroke="currentColor" fill="none"/>${ornaments[i % ornaments.length]}</g></g>`).join("")}
+    </svg>`;
+    container.appendChild(garland);
+  },
+};
+
 const LayoutSync = {
   attached: false,
   published: {},
@@ -3859,8 +3917,10 @@ const LayoutSync = {
   },
 
   update() {
-    const tv = !!document.querySelector(".layout-tv") || /webos|web0s|netcast/i.test(navigator.userAgent);
+    const tv = SeasonalDecorations.isTv();
     document.documentElement.classList.toggle("sspure-tv", tv);
+    const container = document.getElementById("slides-container");
+    if (container) SeasonalDecorations.update(container);
     this.publish("--slideshow-tv-height", `${CONFIG.tvHeightPercent}vh`);
     const page = document.querySelector(".page");
     if (!page) return;
@@ -3895,6 +3955,12 @@ const LayoutSync = {
 
     window.addEventListener("resize", () => this.update(), { passive: true });
     window.addEventListener("hashchange", () => this.update());
+
+    // Jellyfin can switch between desktop and TV layout without a reload.
+    this.modeObserver = new MutationObserver(() => this.update());
+    for (const element of [document.documentElement, document.body]) {
+      this.modeObserver.observe(element, { attributes: true, attributeFilter: ["class"] });
+    }
 
     document.fonts?.ready?.then(() => this.update()).catch(() => {});
 
@@ -3961,7 +4027,7 @@ const SettingsPanel = {
         ["even", "Even mix"],
       ],
       read: () => {
-        if (CONFIG.selectionMode !== "Client") {
+        if (CONFIG.selectionMode !== "Client" || CONFIG.seasonalTheme !== "None") {
           return CONFIG.mediaCategory === "Movies" ? "movies" : CONFIG.mediaCategory === "Series" ? "series" : "all";
         }
         const movies = CONFIG.maxMovies;
@@ -4511,6 +4577,7 @@ window.slideshowPure = {
   STATE,
   SlideUtils,
   ApiUtils,
+  SeasonalDecorations,
   BlurHash,
   SlideCreator,
   SlideshowManager,

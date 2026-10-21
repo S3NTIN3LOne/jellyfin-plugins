@@ -20,7 +20,7 @@ and [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-t
 Upstream licenses are preserved in each plugin directory and release ZIP.
 Slideshow credits are preserved in the JavaScript and CSS files.
 
-## Media Bar settings (3.0.0.2)
+## Media Bar settings (3.0.0.3)
 
 Under Dashboard > Plugins > Media Bar > Web Config:
 
@@ -33,6 +33,16 @@ Under Dashboard > Plugins > Media Bar > Web Config:
   uses the series creation date, not the newest episode date.
 - Server-managed selections take priority over local preferences. Missing or
   inaccessible library names never fall back to all content.
+- Seasonal recommendations: choose Disabled (default), Halloween or Christmas.
+  Halloween matches genre `Horror` or tag `Halloween`. Christmas matches tags or
+  genres `Christmas`, `Weihnachten` or `Xmas`. You can assign these tags in
+  Jellyfin's metadata editor. The existing item count, category and library
+  filters apply; Recently added preserves date order. Seasonal random selection
+  also includes watched titles and titles without logos. No matches means no bar.
+- An animated pumpkin/bat/ghost or bauble/star/holly garland appears near the
+  top of the bar in web layout. It is never created in TV mode or webOS, is
+  removed on layout changes, and stays still when reduced motion is enabled.
+  Seasonal content itself remains available on TV.
 
 Save settings, then restart the TV app or reload the browser. Use `embedded`
 assets to receive these features. File Transformation remains at 3.0.0.1.
@@ -40,6 +50,8 @@ assets to receive these features. File Transformation remains at 3.0.0.1.
 Run selection tests with `node --test tests/mediabar.test.cjs`. The optional
 `node tests/mediabar-layout.cjs` check requires Playwright and Microsoft Edge
 and checks CSS sizing in a desktop browser; it does not emulate webOS.
+`node tests/mediabar-seasonal.cjs` checks decoration visibility, animation,
+reduced motion and mode changes with the same browser dependencies.
 
 ## Build
 
@@ -85,8 +97,8 @@ to select the local SDK when necessary. The script builds each plugin version fr
 checks assembly versions and ZIP contents, and generates `manifest.json` with
 Jellyfin-compatible MD5 checksums and target ABI `12.2.0.0`.
 
-Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.2-jellyfin-12.2/`
-as assets of the GitHub release tagged `v3.0.0.2-jellyfin-12.2`. Use
+Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.3-jellyfin-12.2/`
+as assets of the GitHub release tagged `v3.0.0.3-jellyfin-12.2`. Use
 `RELEASE-NOTES.md` for the release description. The repository must be public
 so Jellyfin can fetch the manifest and packages without GitHub authentication.
 

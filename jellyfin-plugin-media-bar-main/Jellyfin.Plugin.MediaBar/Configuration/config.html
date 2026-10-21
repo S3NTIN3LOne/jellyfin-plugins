@@ -79,7 +79,16 @@
                             <option value="Random">Random (server managed)</option>
                             <option value="Latest">Recently added (newest first)</option>
                         </select>
-                        <div class="fieldDescription">Server-managed modes override client category, library and count preferences, and ignore playlists/list.txt. Restart the client app or reload the page after saving.</div>
+                        <div class="fieldDescription">Server-managed modes and seasonal recommendations override client category, library and count preferences, and ignore playlists/list.txt. Restart the client app or reload the page after saving.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel" for="seasonalTheme">Seasonal recommendations / Saisonale Empfehlungen</label>
+                        <select id="seasonalTheme" data-id="seasonalTheme" is="emby-select" class="emby-select">
+                            <option value="None">Disabled / Aus</option>
+                            <option value="Halloween">Halloween</option>
+                            <option value="Christmas">Christmas / Weihnachten</option>
+                        </select>
+                        <div class="fieldDescription">Halloween: genre Horror or tag Halloween. Christmas: tags or genres Christmas, Weihnachten or Xmas. Add these tags in Jellyfin's metadata editor to select titles. Uses the count, category and libraries below; Recently added keeps newest-first order. Other modes choose randomly, including watched titles. No matches means no bar. Recommendations apply on all devices; the animated garland appears only in the web layout, never in TV mode or webOS.</div>
                     </div>
                     <div class="inputContainer">
                         <label class="inputLabel" for="itemCount">Number of items</label>
@@ -251,6 +260,7 @@
                         VersionString: document.querySelector("[data-id=txtVersionString]").value,
                         WebConfig: {
                             SelectionMode: document.querySelector('#selectionMode').value,
+                            SeasonalTheme: document.querySelector('#seasonalTheme').value,
                             ItemCount: parseInt(document.querySelector('#itemCount').value, 10),
                             MediaCategory: document.querySelector('#mediaCategory').value,
                             LibraryNames: document.querySelector('#libraryNames').value.split(/\r?\n/).map(name => name.trim()).filter(Boolean),
@@ -291,6 +301,7 @@
                     window.ApiClient.getPluginConfiguration(MediaBarConfig.pluginId)
                         .then(function (config) {
                             document.querySelector('#selectionMode').value = config.WebConfig.SelectionMode || 'Client';
+                            document.querySelector('#seasonalTheme').value = config.WebConfig.SeasonalTheme || 'None';
                             document.querySelector('#itemCount').value = config.WebConfig.ItemCount || 10;
                             document.querySelector('#mediaCategory').value = config.WebConfig.MediaCategory || 'All';
                             document.querySelector('#libraryNames').value = (config.WebConfig.LibraryNames || []).join('\n');
