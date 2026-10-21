@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$releaseVersion = '3.0.0.5'
+$releaseVersion = '3.0.0.6'
 $tag = "v$releaseVersion-jellyfin-12.2"
 $output = Join-Path $root "artifacts/$tag"
 New-Item -ItemType Directory -Path $output -Force | Out-Null
@@ -74,7 +74,7 @@ foreach ($plugin in $plugins) {
             category = 'General'
             versions = @([ordered]@{
                 version = $version
-                changelog = if ($plugin.Name -eq 'Media Bar') { 'Halloween and Christmas recommendations with animated garlands in web layout only; TV/webOS shows seasonal content without decorations. Configure under Media Bar > Web Config. Restart client apps after updating.' } else { 'File Transformation for Jellyfin 12.2.0 (unchanged).' }
+                changelog = if ($plugin.Name -eq 'Media Bar') { 'Deutsche Plugin- und Nutzereinstellungen. Kompakte saisonale Girlanden am oberen Rand der Media Bar mit angepasstem Abstand zur Jellyfin-Kopfzeile, auch bei CSS-Themes. Nach dem Update Jellyfin neu starten und Clients neu laden.' } else { 'File Transformation for Jellyfin 12.2.0 (unchanged).' }
                 targetAbi = '12.2.0.0'
                 sourceUrl = "https://github.com/$Repository/releases/download/$tag/$asset"
                 checksum = $checksum

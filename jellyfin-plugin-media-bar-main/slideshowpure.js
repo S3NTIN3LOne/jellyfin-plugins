@@ -2507,7 +2507,7 @@ const SlideCreator = {
       SlideUtils.createElement(
         "span",
         { className: "action-label" },
-        LocalizationUtils.getLocalizedString("Favorite", "Favorite"),
+        LocalizationUtils.getLocalizedString("Favorite", "Favorit"),
       ),
     );
 
@@ -2546,8 +2546,8 @@ const SlideCreator = {
         "div",
         { className: "plate-eyebrow" },
         position >= 0 && STATE.slideshow.totalItems
-          ? `${LocalizationUtils.getLocalizedString("Featured", "Featured")} · ${String(position + 1).padStart(2, "0")} / ${String(STATE.slideshow.totalItems).padStart(2, "0")}`
-          : LocalizationUtils.getLocalizedString("Featured", "Featured"),
+          ? `${LocalizationUtils.getLocalizedString("Featured", "Empfehlung")} · ${String(position + 1).padStart(2, "0")} / ${String(STATE.slideshow.totalItems).padStart(2, "0")}`
+          : LocalizationUtils.getLocalizedString("Featured", "Empfehlung"),
       );
 
       const specs = this.createSpecTable(item);
@@ -2587,30 +2587,30 @@ const SlideCreator = {
 
     if (typeof item.CommunityRating === "number") {
       add(
-        LocalizationUtils.getLocalizedString("Rating", "Rating"),
+        LocalizationUtils.getLocalizedString("Rating", "Bewertung"),
         item.CommunityRating.toFixed(1),
       );
     }
     if (typeof item.CriticRating === "number") {
       add(
-        LocalizationUtils.getLocalizedString("Critics", "Critics"),
+        LocalizationUtils.getLocalizedString("Critics", "Kritiker"),
         `${item.CriticRating.toFixed(0)}%`,
       );
     }
     if (typeof item.PremiereDate === "string") {
       const year = new Date(item.PremiereDate).getFullYear();
       if (!Number.isNaN(year)) {
-        add(LocalizationUtils.getLocalizedString("Year", "Year"), String(year));
+        add(LocalizationUtils.getLocalizedString("Year", "Jahr"), String(year));
       }
     }
 
     if (item.ChildCount) {
       const seasonText =
         item.ChildCount <= 1
-          ? LocalizationUtils.getLocalizedString("Season", "Season")
+          ? LocalizationUtils.getLocalizedString("Season", "Staffel")
           : LocalizationUtils.getLocalizedString(
               "TypeOptionPluralSeason",
-              "Seasons",
+              "Staffeln",
             );
       add(seasonText, String(item.ChildCount));
     } else if (typeof item.RunTimeTicks === "number" && item.RunTimeTicks > 0) {
@@ -2618,20 +2618,20 @@ const SlideCreator = {
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
       add(
-        LocalizationUtils.getLocalizedString("Runtime", "Runtime"),
+        LocalizationUtils.getLocalizedString("Runtime", "Laufzeit"),
         hours ? `${hours}h ${minutes}m` : `${minutes}m`,
       );
     }
 
     if (Array.isArray(item.Genres) && item.Genres.length) {
       add(
-        LocalizationUtils.getLocalizedString("Genres", "Genre"),
+        LocalizationUtils.getLocalizedString("Genres", "Genres"),
         item.Genres.slice(0, 2).join(", "),
       );
     }
     if (typeof item.OfficialRating === "string" && item.OfficialRating) {
       add(
-        LocalizationUtils.getLocalizedString("ParentalRating", "Rated"),
+        LocalizationUtils.getLocalizedString("ParentalRating", "Altersfreigabe"),
         item.OfficialRating,
       );
     }
@@ -2700,10 +2700,10 @@ const SlideCreator = {
     if (item.ChildCount) {
       const seasonText =
         item.ChildCount <= 1
-          ? LocalizationUtils.getLocalizedString("Season", "Season")
+          ? LocalizationUtils.getLocalizedString("Season", "Staffel")
           : LocalizationUtils.getLocalizedString(
               "TypeOptionPluralSeason",
-              "Seasons",
+              "Staffeln",
             );
       push("runtime", `${item.ChildCount} ${seasonText}`);
     } else if (typeof item.RunTimeTicks === "number" && item.RunTimeTicks > 0) {
@@ -2799,8 +2799,8 @@ const SlideCreator = {
           {
             className: "age-rating mediaInfoOfficialRating",
 
-            "aria-label": `Content rated ${ageRating}`,
-            title: `Rating: ${ageRating}`,
+            "aria-label": `Altersfreigabe ${ageRating}`,
+            title: `Altersfreigabe: ${ageRating}`,
           },
           ageRating,
         ),
@@ -2810,10 +2810,10 @@ const SlideCreator = {
     if (seasonCount) {
       const seasonText =
         seasonCount <= 1
-          ? LocalizationUtils.getLocalizedString("Season", "Season")
+          ? LocalizationUtils.getLocalizedString("Season", "Staffel")
           : LocalizationUtils.getLocalizedString(
               "TypeOptionPluralSeason",
-              "Seasons",
+              "Staffeln",
             );
       fields.push(
         SlideUtils.createElement(
@@ -2834,7 +2834,7 @@ const SlideCreator = {
           { className: "runTime" },
           LocalizationUtils.getLocalizedString(
             "EndsAtValue",
-            "Ends at {0}",
+            "Endet um {0}",
             formattedEndTime,
           ),
         ),
@@ -2865,7 +2865,7 @@ const SlideCreator = {
       SlideUtils.createElement(
         "span",
         { className: "play-text" },
-        LocalizationUtils.getLocalizedString("Play", "Play"),
+        LocalizationUtils.getLocalizedString("Play", "Wiedergeben"),
       ),
     );
 
@@ -3496,8 +3496,8 @@ const SlideshowManager = {
     const pauseButton = document.querySelector(".pause-button");
     if (pauseButton) {
       const label = paused
-        ? LocalizationUtils.getLocalizedString("Play", "Play")
-        : LocalizationUtils.getLocalizedString("ButtonPause", "Pause");
+        ? LocalizationUtils.getLocalizedString("Play", "Wiedergeben")
+        : LocalizationUtils.getLocalizedString("ButtonPause", "Pausieren");
 
       pauseButton.innerHTML = `<i class="material-icons ${
         paused ? "play_arrow" : "pause"
@@ -3876,13 +3876,28 @@ const SeasonalDecorations = {
     return !!document.querySelector(".layout-tv") || /webos|web0s|netcast/i.test(navigator.userAgent);
   },
 
+  position(container, garland) {
+    // A full-bleed bar sits behind Jellyfin's header; a theme card already starts below it.
+    // Measure the actual overlap instead of adding a viewport-based offset to both.
+    const stage = container.getBoundingClientRect();
+    const header = document.querySelector(".skinHeader");
+    const bounds = header?.getBoundingClientRect();
+    const overlaps = bounds && bounds.bottom > stage.top && bounds.top < stage.bottom &&
+      bounds.right > stage.left && bounds.left < stage.right;
+    const inset = overlaps ? Math.max(0, bounds.bottom - stage.top) : 0;
+    garland.style.setProperty("--ss-garland-top", `${Math.round(inset) + 8}px`);
+  },
+
   update(container) {
     const existing = container.querySelector(".ss-seasonal-garland");
     if (CONFIG.seasonalTheme === "None" || this.isTv()) {
       existing?.remove();
       return;
     }
-    if (existing?.dataset.theme === CONFIG.seasonalTheme) return;
+    if (existing?.dataset.theme === CONFIG.seasonalTheme) {
+      this.position(container, existing);
+      return;
+    }
     existing?.remove();
 
     // Decorative, self-contained vector artwork. No image downloads or focus targets.
@@ -3898,11 +3913,11 @@ const SeasonalDecorations = {
     garland.className = "ss-seasonal-garland";
     garland.dataset.theme = CONFIG.seasonalTheme;
     garland.setAttribute("aria-hidden", "true");
-    garland.innerHTML = `<svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMin meet" focusable="false" aria-hidden="true">
-      <path class="ss-garland-cord" d="M-20 8Q100 68 200 16Q300 68 400 16Q500 68 600 16Q700 68 800 16Q900 68 1000 16Q1100 68 1220 8"/>
-      ${Array.from({ length: 11 }, (_, i) => `<g transform="translate(${68 + i * 100} ${i % 2 ? 12 : 34})"><g class="ss-garland-ornament" style="animation-delay:-${i * 0.37}s"><path d="M32 0v13" stroke="currentColor" fill="none"/>${ornaments[i % ornaments.length]}</g></g>`).join("")}
-    </svg>`;
+    garland.innerHTML = `<svg class="ss-garland-wire" viewBox="0 0 1200 40" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+      <path class="ss-garland-cord" vector-effect="non-scaling-stroke" d="M0 0Q100 40 200 0Q300 40 400 0Q500 40 600 0Q700 40 800 0Q900 40 1000 0Q1100 40 1200 0"/>
+    </svg>${Array.from({ length: 11 }, (_, i) => `<span class="ss-garland-hanger" style="left:${(i + 1) * 100 / 12}%;--ss-hang-depth:${i % 2 ? 0 : 0.5}"><svg viewBox="0 0 64 68" focusable="false" aria-hidden="true"><g class="ss-garland-ornament" style="animation-delay:-${i * 0.37}s"><path d="M32 0v13" stroke="currentColor" fill="none"/>${ornaments[i % ornaments.length]}</g></svg></span>`).join("")}`;
     container.appendChild(garland);
+    this.position(container, garland);
   },
 };
 
@@ -4007,25 +4022,25 @@ const SettingsPanel = {
   FIELDS: [
     {
       key: "layout",
-      label: "Layout",
+      label: "Darstellung",
       type: "choice",
       options: [
-        ["plate", "Plate"],
-        ["marquee", "Marquee"],
-        ["classic", "Classic"],
+        ["plate", "Infotafel"],
+        ["marquee", "Kinoansicht"],
+        ["classic", "Klassisch"],
       ],
     },
     {
 
       key: "contentMode",
-      label: "Display",
+      label: "Inhalte",
       type: "choice",
       locks: ["maxMovies", "maxSeries"],
       options: [
-        ["all", "Everything"],
-        ["movies", "Movies"],
-        ["series", "TV shows"],
-        ["even", "Even mix"],
+        ["all", "Alles"],
+        ["movies", "Filme"],
+        ["series", "Serien"],
+        ["even", "Ausgewogene Mischung"],
       ],
       read: () => {
         if (CONFIG.selectionMode !== "Client" || CONFIG.seasonalTheme !== "None") {
@@ -4051,32 +4066,32 @@ const SettingsPanel = {
     {
 
       key: "libraries",
-      label: "Libraries",
+      label: "Bibliotheken",
       type: "multichoice",
     },
     {
       key: "shuffleInterval",
-      label: "Slide duration",
+      label: "Anzeigedauer pro Titel",
       type: "range",
       min: 3000,
       max: 60000,
       step: 1000,
-      format: (value) => `${Math.round(value / 1000)}s`,
+      format: (value) => `${Math.round(value / 1000)} Sek.`,
     },
-    { key: "slideAnimationEnabled", label: "Motion effects", type: "switch" },
+    { key: "slideAnimationEnabled", label: "Bewegungseffekte", type: "switch" },
 
-    { key: "syncPageBackdrop", label: "Sync page backdrop", type: "switch" },
-    { key: "pauseOnHover", label: "Pause on hover", type: "switch" },
-    { key: "enableTrailers", label: "Trailers", type: "switch" },
+    { key: "syncPageBackdrop", label: "Seitenhintergrund synchronisieren", type: "switch" },
+    { key: "pauseOnHover", label: "Bei Mausberührung pausieren", type: "switch" },
+    { key: "enableTrailers", label: "Trailer", type: "switch" },
 
     {
       key: "allowTrailersOnTouch",
-      label: "Trailers on phones",
+      label: "Trailer auf Mobilgeräten",
       type: "switch",
     },
     {
       key: "trailerVolume",
-      label: "Trailer volume",
+      label: "Trailer-Lautstärke",
       type: "range",
       min: 0,
       max: 100,
@@ -4085,15 +4100,15 @@ const SettingsPanel = {
     },
     {
       key: "trailerLibraries",
-      label: "Trailers from",
+      label: "Trailer aus diesen Bibliotheken",
       type: "multichoice",
     },
     {
       key: "rememberOrderForSession",
-      label: "Resume where I left off",
+      label: "Letzte Position merken",
       type: "switch",
     },
-    { key: "respectDataSaver", label: "Respect data saver", type: "switch" },
+    { key: "respectDataSaver", label: "Datensparmodus berücksichtigen", type: "switch" },
   ],
 
   build() {
@@ -4101,21 +4116,22 @@ const SettingsPanel = {
 
     const panel = SlideUtils.createElement("div", {
       className: "ss-settings",
+      lang: "de",
       role: "dialog",
-      "aria-label": "Slideshow settings",
+      "aria-label": "Media-Bar-Einstellungen",
       "aria-hidden": "true",
     });
 
     const header = SlideUtils.createElement("div", {
       className: "ss-settings-head",
-      innerHTML: "<h2>Slideshow</h2>",
+      innerHTML: "<h2>Media-Bar-Einstellungen</h2>",
     });
     header.append(
       SlideUtils.createElement("button", {
         className: "ss-settings-close",
         type: "button",
         innerHTML: '<i class="material-icons">close</i>',
-        "aria-label": "Close settings",
+        "aria-label": "Einstellungen schließen",
         onclick: () => this.close(),
       }),
     );
@@ -4130,7 +4146,7 @@ const SettingsPanel = {
       SlideUtils.createElement("button", {
         className: "ss-settings-reset",
         type: "button",
-        textContent: "Reset to server defaults",
+        textContent: "Auf Servervorgaben zurücksetzen",
         onclick: () => this.reset(),
       }),
     );
@@ -4227,7 +4243,7 @@ const SettingsPanel = {
       row.append(
         SlideUtils.createElement("span", {
           className: "ss-set-note",
-          textContent: "Set by your server administrator",
+          textContent: "Vom Serveradministrator vorgegeben",
         }),
       );
     }
@@ -4243,7 +4259,7 @@ const SettingsPanel = {
       group.append(
         SlideUtils.createElement("span", {
           className: "ss-set-note",
-          textContent: "Could not read your libraries.",
+          textContent: "Bibliotheken konnten nicht geladen werden.",
         }),
       );
       return;
@@ -4409,7 +4425,7 @@ const initArrowNavigation = () => {
     innerHTML: '<i class="material-icons chevron_left"></i>',
     role: "button",
     tabIndex: "0",
-    "aria-label": LocalizationUtils.getLocalizedString("Previous", "Previous"),
+    "aria-label": LocalizationUtils.getLocalizedString("Previous", "Vorheriger Titel"),
     onclick: (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -4422,7 +4438,7 @@ const initArrowNavigation = () => {
     innerHTML: '<i class="material-icons chevron_right"></i>',
     role: "button",
     tabIndex: "0",
-    "aria-label": LocalizationUtils.getLocalizedString("Next", "Next"),
+    "aria-label": LocalizationUtils.getLocalizedString("Next", "Nächster Titel"),
     onclick: (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -4444,8 +4460,8 @@ const initArrowNavigation = () => {
     className: "pause-button ss-chrome",
     innerHTML: '<i class="material-icons">pause</i>',
     tabIndex: "0",
-    "aria-label": LocalizationUtils.getLocalizedString("ButtonPause", "Pause"),
-    title: LocalizationUtils.getLocalizedString("ButtonPause", "Pause"),
+    "aria-label": LocalizationUtils.getLocalizedString("ButtonPause", "Pausieren"),
+    title: LocalizationUtils.getLocalizedString("ButtonPause", "Pausieren"),
     onclick: (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -4458,8 +4474,8 @@ const initArrowNavigation = () => {
     innerHTML: '<i class="material-icons">settings</i>',
     role: "button",
     tabIndex: "0",
-    "aria-label": "Slideshow settings",
-    title: "Slideshow settings",
+    "aria-label": "Media-Bar-Einstellungen",
+    title: "Media-Bar-Einstellungen",
     onclick: (e) => {
       e.preventDefault();
       e.stopPropagation();

@@ -20,7 +20,16 @@ and [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-t
 Upstream licenses are preserved in each plugin directory and release ZIP.
 Slideshow credits are preserved in the JavaScript and CSS files.
 
-## Media Bar settings (3.0.0.5)
+## Media Bar settings (3.0.0.6)
+
+Plugin and client settings are in German, including labels, help text and
+accessibility descriptions. Stored configuration values and layout identifiers
+remain compatible with existing installations.
+
+Seasonal garlands now form a compact strip at the upper edge of the media bar.
+The cord follows the full container width; small ornaments retain their aspect
+ratio on narrow screens. Header overlap is measured so a full-bleed bar and a
+theme card receive the appropriate top spacing. TV/webOS remains undecorated.
 
 Under Dashboard > Plugins > Media Bar > Web Config:
 
@@ -52,6 +61,8 @@ Run selection tests with `node --test tests/mediabar.test.cjs`. The optional
 and checks CSS sizing in a desktop browser; it does not emulate webOS.
 `node tests/mediabar-seasonal.cjs` checks decoration visibility, animation,
 reduced motion and mode changes with the same browser dependencies.
+`node tests/mediabar-ui.cjs` checks responsive garland geometry and German
+settings, including a configuration load/save round-trip.
 
 ## Build
 
@@ -97,8 +108,8 @@ to select the local SDK when necessary. The script builds each plugin version fr
 checks assembly versions and ZIP contents, and generates `manifest.json` with
 Jellyfin-compatible MD5 checksums and target ABI `12.2.0.0`.
 
-Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.5-jellyfin-12.2/`
-as assets of the GitHub release tagged `v3.0.0.5-jellyfin-12.2`. Use
+Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.6-jellyfin-12.2/`
+as assets of the GitHub release tagged `v3.0.0.6-jellyfin-12.2`. Use
 `RELEASE-NOTES.md` for the release description. The repository must be public
 so Jellyfin can fetch the manifest and packages without GitHub authentication.
 

@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="de" xmlns="http://www.w3.org/1999/html">
 <head>
     <title>Media Bar</title>
 </head>
@@ -12,206 +12,205 @@
                 <a is="emby-linkbutton" class="raised raised-mini" style="margin-left: 2em;" target="_blank"
                    href="https://github.com/IAmParadox27/jellyfin-plugin-media-bar">
                     <i class="md-icon button-icon button-icon-left secondaryText"></i>
-                    <span>Help</span>
+                    <span>Hilfe</span>
                 </a>
             </div>
         </div>
         <hr class="solid" style="margin-bottom: 1.5em;">
         <div style="margin-bottom: 1.5em;">
-            <button class="jellyfin-tab-button active" data-tab="general" style="background: none; border: none; color: #fff; cursor: pointer; transition: color 0.3s, border-bottom 0.3s; border-bottom: 2px solid #fff; padding: 0.5em 1em;"><h3>General Settings</h3></button>
-            <button class="jellyfin-tab-button" data-tab="web-config" style="background: none; border: none; color: #ccc; cursor: pointer; transition: color 0.3s, border-bottom 0.3s; border-bottom: 2px solid transparent; padding: 0.5em 1em;"><h3>Web Config Settings</h3></button>
+            <button class="jellyfin-tab-button active" data-tab="general" style="background: none; border: none; color: #fff; cursor: pointer; transition: color 0.3s, border-bottom 0.3s; border-bottom: 2px solid #fff; padding: 0.5em 1em;"><h3>Allgemeine Einstellungen</h3></button>
+            <button class="jellyfin-tab-button" data-tab="web-config" style="background: none; border: none; color: #ccc; cursor: pointer; transition: color 0.3s, border-bottom 0.3s; border-bottom: 2px solid transparent; padding: 0.5em 1em;"><h3>Darstellung und Inhalte</h3></button>
         </div>
 
         <form class="mediaBarConfigurationForm">
             <div id="general" class="jellyfin-tab-content active" style="display: block;">
                 <div id="configurationWrapper">
                     <div class="inputContainer">
-                        <span>Enabled: </span>
+                        <span>Media Bar: </span>
                         <select is="emby-select" class="emby-select-withcolor emby-select" data-id="enabledSelect">
-                            <option value="Enabled">Enabled</option>
-                            <option value="Disabled">Disabled</option>
+                            <option value="Enabled">Aktiviert</option>
+                            <option value="Disabled">Deaktiviert</option>
                         </select>
-                        <span>Whether the media bar should appear or not.</span>
+                        <span>Legt fest, ob die Media Bar angezeigt wird.</span>
                     </div>
                     <div class="inputContainer">
                         <label class="inputLabel inputLabelUnfocused" for="txtVersionString">Version</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="txtVersionString"></label>
                         <input id="txtVersionString" type="text" is="emby-input" class="emby-input" data-id="txtVersionString" />
-                        <div class="fieldDescription">Which version of the media bar to use. Leave as <code>embedded</code> (recommended): the version built into this plugin, tested to match it, works without internet access. Advanced: enter a release number (like <code>2.4.12.0</code>) to load that exact version from the internet instead.</div>
+                        <div class="fieldDescription">Empfohlen: <code>embedded</code> verwendet die mitgelieferte, zum Plugin passende Version ohne Internetzugriff. Für eine andere Version kann eine konkrete Versionsnummer (z. B. <code>2.4.12.0</code>) eingetragen werden. Diese wird aus dem Internet geladen.</div>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input type="checkbox" id="chkAllowUnpinnedRefs" is="emby-checkbox" class="emby-checkbox" data-id="chkAllowUnpinnedRefs" />
-                            <span class="checkboxLabel">Get updates early</span>
+                            <span class="checkboxLabel">Vorabversionen verwenden</span>
                             <span class="checkboxOutline">
                                 <span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span>
                                 <span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span>
                             </span>
                         </label>
-                        <div class="fieldDescription">With this on and Version set to <code>main</code> or <code>latest</code>, the media bar loads the developers' newest work-in-progress from the internet. Changes appear on their own within about half a day, before they have been released or fully tested. If something breaks, turn this off to go back to the built-in version.</div>
+                        <div class="fieldDescription">Lädt bei der Versionsangabe <code>main</code> oder <code>latest</code> den aktuellen Entwicklungsstand aus dem Internet. Änderungen können innerhalb eines halben Tages automatisch erscheinen. Zum Zurückkehren zur mitgelieferten Version diese Option deaktivieren.</div>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input type="checkbox" id="chkUseAvatarsFile" is="emby-checkbox" class="emby-checkbox" data-id="chkUseAvatarsFile" />
-                            <span class="checkboxLabel">Use physical avatars file</span>
+                            <span class="checkboxLabel">Titelliste aus Datei verwenden</span>
                             <span class="checkboxOutline">
                                 <span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span>
                                 <span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span>
                             </span>
                         </label>
-                        <div class="fieldDescription">If checked, the plugin will look for a list.txt file in the avatars directory at the root of jellyfin-web.</div>
+                        <div class="fieldDescription">Verwendet die Datei <code>avatars/list.txt</code> im Hauptverzeichnis von jellyfin-web als Titelliste.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="txtAvatarsPlaylist">Avatars Playlist</label>
+                        <label class="inputLabel inputLabelUnfocused" for="txtAvatarsPlaylist">Wiedergabeliste für die Titelauswahl</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="txtAvatarsPlaylist"></label>
                         <input id="txtAvatarsPlaylist" type="text" is="emby-input" class="emby-input" data-id="txtAvatarsPlaylist" />
-                        <div class="fieldDescription">If populated, and "Use physical avatars file" is disabled, this is the name of the playlist which is used to populate the media bar.<br />
-                        If empty, the media bar will randomly populate.</div>
+                        <div class="fieldDescription">Name der Wiedergabeliste für die Media Bar, wenn die Titelliste aus Datei deaktiviert ist. Ohne Angabe werden Titel zufällig ausgewählt.</div>
                     </div>
                 </div>
             </div>
             <div id="web-config" class="jellyfin-tab-content" style="display: none;">
                 <div>
                     <div class="inputContainer">
-                        <label class="inputLabel" for="selectionMode">Content selection</label>
+                        <label class="inputLabel" for="selectionMode">Inhaltsauswahl</label>
                         <select id="selectionMode" data-id="selectionMode" is="emby-select" class="emby-select">
-                            <option value="Client">Client selection / playlist (existing behavior)</option>
-                            <option value="Random">Random (server managed)</option>
-                            <option value="Latest">Recently added (newest first)</option>
+                            <option value="Client">Nutzerauswahl / Wiedergabeliste</option>
+                            <option value="Random">Zufällig (serverseitig)</option>
+                            <option value="Latest">Zuletzt hinzugefügt (neueste zuerst)</option>
                         </select>
-                        <div class="fieldDescription">Server-managed modes and seasonal recommendations override client category, library and count preferences, and ignore playlists/list.txt. Restart the client app or reload the page after saving.</div>
+                        <div class="fieldDescription">Serverseitige Modi und saisonale Empfehlungen haben Vorrang vor der lokalen Auswahl von Kategorie, Bibliotheken und Anzahl. Wiedergabelisten und list.txt werden dabei nicht verwendet. Nach dem Speichern die App neu starten oder die Seite neu laden.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel" for="seasonalTheme">Seasonal recommendations / Saisonale Empfehlungen</label>
+                        <label class="inputLabel" for="seasonalTheme">Saisonale Empfehlungen</label>
                         <select id="seasonalTheme" data-id="seasonalTheme" is="emby-select" class="emby-select">
-                            <option value="None">Disabled / Aus</option>
+                            <option value="None">Aus</option>
                             <option value="Halloween">Halloween</option>
-                            <option value="Christmas">Christmas / Weihnachten</option>
+                            <option value="Christmas">Weihnachten</option>
                         </select>
-                        <div class="fieldDescription">Halloween: genre Horror or tag Halloween. Christmas: tags or genres Christmas, Weihnachten or Xmas. Add these tags in Jellyfin's metadata editor to select titles. Uses the count, category and libraries below; Recently added keeps newest-first order. Other modes choose randomly, including watched titles. No matches means no bar. Recommendations apply on all devices; the animated garland appears only in the web layout, never in TV mode or webOS.</div>
+                        <div class="fieldDescription">Halloween: Genre „Horror“ oder Schlagwort „Halloween“. Weihnachten: Schlagwörter oder Genres „Christmas“, „Weihnachten“ oder „Xmas“. Diese Schlagwörter lassen sich im Metadaten-Editor von Jellyfin vergeben. Anzahl, Kategorie und Bibliotheken werden unten festgelegt. „Zuletzt hinzugefügt“ zeigt neueste Titel zuerst; die anderen Modi wählen zufällig aus, auch bereits gesehene Titel. Ohne passende Titel wird keine Media Bar angezeigt. Die Empfehlungen gelten auf allen Geräten; die animierte Girlande erscheint ausschließlich im Weblayout, nicht im TV-Modus oder auf webOS.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel" for="itemCount">Number of items</label>
+                        <label class="inputLabel" for="itemCount">Anzahl der Titel</label>
                         <input id="itemCount" data-id="itemCount" type="number" min="1" max="500" step="1" required is="emby-input" class="emby-input" />
-                        <div class="fieldDescription">Maximum total across selected libraries in server-managed modes. Recently added also includes watched titles and titles without logos.</div>
+                        <div class="fieldDescription">Maximale Gesamtzahl über alle ausgewählten Bibliotheken in serverseitigen und saisonalen Modi. „Zuletzt hinzugefügt“ berücksichtigt auch gesehene Titel und Titel ohne Logo.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel" for="mediaCategory">Category</label>
+                        <label class="inputLabel" for="mediaCategory">Kategorie</label>
                         <select id="mediaCategory" data-id="mediaCategory" is="emby-select" class="emby-select">
-                            <option value="All">Movies and series</option>
-                            <option value="Movies">Movies only</option>
-                            <option value="Series">Series only</option>
+                            <option value="All">Filme und Serien</option>
+                            <option value="Movies">Nur Filme</option>
+                            <option value="Series">Nur Serien</option>
                         </select>
-                        <div class="fieldDescription">For series, recently added refers to when the series was added, not its newest episode.</div>
+                        <div class="fieldDescription">Bei Serien zählt das Hinzufügen der Serie, nicht das Datum ihrer neuesten Folge.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel" for="libraryNames">Libraries (one name per line)</label>
+                        <label class="inputLabel" for="libraryNames">Bibliotheken (ein Name pro Zeile)</label>
                         <textarea id="libraryNames" data-id="libraryNames" rows="4" class="emby-input"></textarea>
-                        <div class="fieldDescription">Optional library names, such as Movies or Kids. Empty means all libraries the current user can access. Unavailable libraries are skipped; no matches shows no bar.</div>
+                        <div class="fieldDescription">Optional: Bibliotheksnamen, z. B. Filme oder Kinder. Leer bedeutet alle Bibliotheken, auf die der angemeldete Nutzer zugreifen darf. Nicht verfügbare Bibliotheken werden übersprungen. Ohne Treffer wird keine Media Bar angezeigt.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel" for="tvHeightPercent">TV bar height (% of screen)</label>
+                        <label class="inputLabel" for="tvHeightPercent">Höhe im TV-Modus (% der Bildschirmhöhe)</label>
                         <input id="tvHeightPercent" data-id="tvHeightPercent" type="number" min="30" max="60" step="1" required is="emby-input" class="emby-input" />
-                        <div class="fieldDescription">Default: 40%. Applies to Jellyfin TV layout and LG webOS. TV uses a compact view without the plot summary.</div>
+                        <div class="fieldDescription">Standard: 50 %. Gilt für das TV-Layout von Jellyfin und LG webOS. Im TV-Modus wird eine kompakte Ansicht ohne Inhaltsbeschreibung verwendet.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="numShuffleInterval">Shuffle Interval</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numShuffleInterval">Anzeigedauer pro Titel</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numShuffleInterval"></label>
                         <input id="numShuffleInterval" type="number" is="emby-input" class="emby-input" data-id="numShuffleInterval" />
-                        <div class="fieldDescription">How long (ms) should each slide last before changing to the next? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">Zeit bis zum nächsten Titel in Millisekunden. -1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="numRetryInterval">Retry Interval</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numRetryInterval">Wartezeit vor erneutem Versuch</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numRetryInterval"></label>
                         <input id="numRetryInterval" type="number" is="emby-input" class="emby-input" data-id="numRetryInterval" />
-                        <div class="fieldDescription">How long (ms) should to wait before trying again after a failed initialization? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">Wartezeit in Millisekunden nach einer fehlgeschlagenen Initialisierung. -1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="numMinSwipeDistance">Min Swipe Distance</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numMinSwipeDistance">Mindeststrecke beim Wischen</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numMinSwipeDistance"></label>
                         <input id="numMinSwipeDistance" type="number" is="emby-input" class="emby-input" data-id="numMinSwipeDistance" />
-                        <div class="fieldDescription">How far (px) should the user have to swipe before triggering the next/prev slide? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">Wischstrecke in Pixeln zum Wechseln zum nächsten oder vorherigen Titel. -1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="numLoadingCheckInterval">Loading Check Interval</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numLoadingCheckInterval">Prüfintervall beim Laden</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numLoadingCheckInterval"></label>
                         <input id="numLoadingCheckInterval" type="number" is="emby-input" class="emby-input" data-id="numLoadingCheckInterval" />
-                        <div class="fieldDescription">How long (ms) between checking whether the login screen or home screen has loaded? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">Prüfintervall in Millisekunden für den Ladezustand der Anmeldung und Startseite. -1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="numMaxPlotLength">Max Plot Length</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numMaxPlotLength">Maximale Länge der Inhaltsbeschreibung</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numMaxPlotLength"></label>
                         <input id="numMaxPlotLength" type="number" is="emby-input" class="emby-input" data-id="numMaxPlotLength" />
-                        <div class="fieldDescription">How many words should be displayed for the plot on the Media Bar? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">Längenbegrenzung der Inhaltsbeschreibung. Der verfügbare Platz und die Zeilenbegrenzung des Layouts bestimmen die sichtbare Länge. -1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer" style="display:none;"><!-- Config variable doesn't seem to be used -->
-                        <label class="inputLabel inputLabelUnfocused" for="numMaxMovies">Max Movies</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numMaxMovies">Maximale Anzahl an Filmen</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numMaxMovies"></label>
                         <input id="numMaxMovies" type="number" is="emby-input" class="emby-input" data-id="numMaxMovies" />
-                        <div class="fieldDescription">? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">-1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer" style="display:none;"><!-- Config variable doesn't seem to be used -->
-                        <label class="inputLabel inputLabelUnfocused" for="numMaxTvShows">Max TV Shows</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numMaxTvShows">Maximale Anzahl an Serien</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numMaxTvShows"></label>
                         <input id="numMaxTvShows" type="number" is="emby-input" class="emby-input" data-id="numMaxTvShows" />
-                        <div class="fieldDescription">? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">-1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="numMaxItems">Max Items</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numMaxItems">Maximale Titelanzahl bei Nutzerauswahl</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numMaxItems"></label>
                         <input id="numMaxItems" type="number" is="emby-input" class="emby-input" data-id="numMaxItems" />
-                        <div class="fieldDescription">Maximum number of items to retrieve from the server, this is also the number of items in the loop? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">Maximale Anzahl geladener Titel bei Nutzerauswahl. Serverseitige und saisonale Modi verwenden das Feld „Anzahl der Titel“. -1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="numPreloadCount">Preload Count</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numPreloadCount">Vorzuladende Titel</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numPreloadCount"></label>
                         <input id="numPreloadCount" type="number" is="emby-input" class="emby-input" data-id="numPreloadCount" />
-                        <div class="fieldDescription">Number of slides in the future to load before showing them? This helps with ensuring the image is visible when its ready to be displayed. (set to -1 to use default value)</div>
+                        <div class="fieldDescription">Anzahl der im Voraus geladenen Titel für einen flüssigen Wechsel. -1 verwendet den Standardwert.</div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="numFadeTransitionDuration">Fade Transition Duration</label>
+                        <label class="inputLabel inputLabelUnfocused" for="numFadeTransitionDuration">Dauer der Überblendung</label>
                         <label class="inputLabel inputLabel-float inputLabelUnfocused" for="numFadeTransitionDuration"></label>
                         <input id="numFadeTransitionDuration" type="number" is="emby-input" class="emby-input" data-id="numFadeTransitionDuration" />
-                        <div class="fieldDescription">How long (ms) should the fade transition take when changing slide? (set to -1 to use default value)</div>
+                        <div class="fieldDescription">Dauer der Überblendung zwischen Titeln in Millisekunden. -1 verwendet den Standardwert.</div>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription" style="margin-bottom: 1.5em;">
                         <label class="emby-checkbox-label">
                             <input data-id="chkSlideAnimationEnabled" id="chkSlideAnimationEnabled" type="checkbox" is="emby-checkbox" class="emby-checkbox">
-                            <span class="checkboxLabel">Slide Animation Enabled?</span>
+                            <span class="checkboxLabel">Bewegungseffekte aktivieren</span>
                             <span class="checkboxOutline">
                                 <span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span>
                                 <span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span>
                             </span>
                         </label>
-                        <div class="fieldDescription">Do the slides animate while they're visible? (the zooming in effect, can be quite performance heavy)</div>
+                        <div class="fieldDescription">Aktiviert den langsamen Zoom der Hintergrundbilder. Dies kann auf schwächeren Geräten die Leistung beeinträchtigen.</div>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription" style="margin-bottom: 1.5em;">
                         <label class="emby-checkbox-label">
                             <input data-id="chkEnableTrailers" id="chkEnableTrailers" type="checkbox" is="emby-checkbox" class="emby-checkbox">
-                            <span class="checkboxLabel">Enable Trailers?</span>
+                            <span class="checkboxLabel">Trailer aktivieren</span>
                             <span class="checkboxOutline">
                                 <span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span>
                                 <span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span>
                             </span>
                         </label>
-                        <div class="fieldDescription">Enable trailer playback on the media bar slides?</div>
+                        <div class="fieldDescription">Spielt verfügbare Trailer innerhalb der Media Bar ab.</div>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription" style="margin-bottom: 1.5em;">
                         <label class="emby-checkbox-label">
                             <input data-id="chkSyncPageBackdrop" id="chkSyncPageBackdrop" type="checkbox" is="emby-checkbox" class="emby-checkbox">
-                            <span class="checkboxLabel">Sync Page Backdrop?</span>
+                            <span class="checkboxLabel">Seitenhintergrund synchronisieren</span>
                             <span class="checkboxOutline">
                                 <span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span>
                                 <span class="material-icons checkboxIcon checkboxIcon-unchecked " aria-hidden="true"></span>
                             </span>
                         </label>
-                        <div class="fieldDescription">Sync the page backdrop with the media bar slide?</div>
+                        <div class="fieldDescription">Passt den Seitenhintergrund an den aktuellen Titel der Media Bar an.</div>
                     </div>
                 </div>
             </div>
             <br />
             <button id="saveConfig" is="emby-button" type="submit" class="emby-button raised button-submit block">
-                <span>Save</span>
+                <span>Speichern</span>
             </button>
         </form>
     </div>

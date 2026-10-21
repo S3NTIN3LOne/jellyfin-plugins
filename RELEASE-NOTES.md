@@ -1,42 +1,37 @@
-# Media Bar 3.0.0.5 - Seasonal recommendations and web garlands
+# Media Bar 3.0.0.6 – Deutsche Einstellungen und kompakte Girlanden
 
-Configure **Seasonal recommendations / Saisonale Empfehlungen** in Dashboard >
-Plugins > Media Bar > Web Config. Choose Disabled (default), Halloween or Christmas.
+Die Plugin-Einstellungen und das persönliche Media-Bar-Menü sind jetzt auf
+Deutsch: Beschriftungen, Auswahlmöglichkeiten, Hilfetexte, Schaltflächen und
+Bedienungshinweise. Bestehende Einstellungen bleiben erhalten. Deutsche
+Ersatztexte verhindern englische Begriffe wie „Play“, falls Jellyfin keine
+passende Übersetzung liefert. Lange Beschriftungen können auf schmalen
+Bildschirmen umbrechen.
 
-- Halloween recommends titles with the Horror genre or Halloween tag.
-- Christmas recommends titles tagged or categorized as Christmas, Weihnachten or Xmas.
-- Add these tags using Jellyfin's metadata editor to include selected titles.
-- The configured count, category and libraries apply. Recently added keeps its
-  newest-first order; other modes select seasonal titles randomly, including
-  watched titles and titles without logos. No matches means no bar.
-- Seasonal selection overrides client selection and playlists/list.txt.
-
-Enabling a season adds an animated garland near the top of the media bar:
-Halloween pumpkins, bats and ghosts, or Christmas baubles, stars and holly.
-The artwork is embedded SVG/CSS and requires no external image requests.
-The garland does not intercept clicks or keyboard focus. Reduced-motion
-preferences disable its animation.
-
-**The garland is web-only:** no decoration nodes or animations are created in
-Jellyfin TV mode or LG webOS. Switching to TV mode removes existing decorations.
-Seasonal recommendations themselves remain available on TV.
+Die saisonale Girlande liegt jetzt als flacher Streifen am oberen Rand der
+Media Bar. Die Schnur reicht über die Breite der Bar, und die Anhänger sind
+kleiner. Ihr Seitenverhältnis bleibt auch auf schmalen Bildschirmen erhalten.
+Der Abstand berücksichtigt die tatsächlich überlappende Jellyfin-Kopfzeile.
+Dadurch wird bei einer Themenkarte unterhalb der Kopfzeile kein zusätzlicher
+großer Abstand mehr addiert. Die bestehenden Motive und Animationen bleiben
+erhalten; im TV-Modus und auf webOS erscheint weiterhin keine Girlande.
 
 ## Update
 
-Use the existing repository:
+Die bisherige Repository-Adresse bleibt gültig:
 https://github.com/S3NTIN3LOne/jellyfin-plugins/releases/latest/download/manifest.json
 
-Update Media Bar to 3.0.0.5, restart Jellyfin and reload browser clients / restart
-TV apps. Keep asset version set to `embedded`. File Transformation remains at
-3.0.0.1 and is included unchanged.
+Media Bar auf 3.0.0.6 aktualisieren, Jellyfin neu starten und die Seite neu
+laden bzw. die App vollständig neu starten. Als Asset-Version `embedded`
+verwenden. File Transformation bleibt bei 3.0.0.1.
 
-## Validation
+## Prüfungen
 
-- Both Release builds: zero warnings or errors.
-- 13 automated selection/configuration tests passed, including seasonal filters,
-  user/library scope, deduplication, count limits and no unrelated fallback.
-- Browser checks passed for Disabled/Halloween/Christmas across web, TV layout
-  and a webOS user agent, including animation, reduced motion and mode changes.
-- Existing compact TV and desktop layout checks passed for all three layouts.
-- Artwork previews visually inspected in headless Edge.
-- No physical LG TV or running Jellyfin server was available for runtime testing.
+- Beide Release-Builds ohne Warnungen oder Fehler.
+- 13 Verhaltenstests für Titelauswahl, Timer und Servervorgaben bestanden.
+- Browserprüfungen für Halloween/Weihnachten/Aus, TV, webOS-Erkennung,
+  Bewegungsreduktion und Layoutwechsel bestanden.
+- Girlande bei 1920, 768 und 390 Pixel Breite in nachgebildetem Standardlayout
+  und Kartenlayout geprüft, einschließlich geänderter Kopfzeilenhöhe.
+- Deutsches Nutzermenü auf horizontalen Überlauf geprüft; Laden und Speichern
+  der deutschen Plugin-Einstellungen erhält Kategorien, Bibliotheken und Anzahl.
+- Die Original-Themedatei und ein echter LG-TV standen nicht zur Verfügung.
