@@ -3877,15 +3877,23 @@ const SeasonalDecorations = {
   },
 
   position(container, garland) {
-    // A full-bleed bar sits behind Jellyfin's header; a theme card already starts below it.
-    // Measure the actual overlap instead of adding a viewport-based offset to both.
     const stage = container.getBoundingClientRect();
-    const header = document.querySelector(".skinHeader");
-    const bounds = header?.getBoundingClientRect();
-    const overlaps = bounds && bounds.bottom > stage.top && bounds.top < stage.bottom &&
-      bounds.right > stage.left && bounds.left < stage.right;
-    const inset = overlaps ? Math.max(0, bounds.bottom - stage.top) : 0;
-    garland.style.setProperty("--ss-garland-top", `${Math.round(inset) + 8}px`);
+    // Reserve the top control strip even before Jellyfin finishes building its header.
+    let bottom = stage.top + 48;
+    const reserve = element => {
+      const bounds = element.getBoundingClientRect();
+      if (bounds.width > 0 && bounds.height > 0 && bounds.bottom > stage.top &&
+          bounds.top < stage.bottom && bounds.right > stage.left && bounds.left < stage.right) {
+        bottom = Math.max(bottom, bounds.bottom);
+      }
+    };
+    // Some themes give the header wrapper zero height while its navigation stays visible.
+    document.querySelectorAll(".skinHeader, .headerTop, .headerTabs, .headerTabsSection").forEach(reserve);
+    container.querySelectorAll(".ss-chrome").forEach(element => {
+      // Include hover-hidden controls, but do not move the garland below bottom controls.
+      if (element.getBoundingClientRect().top < stage.top + Math.min(180, stage.height / 2)) reserve(element);
+    });
+    garland.style.setProperty("--ss-garland-top", `${Math.ceil(bottom - stage.top) + 16}px`);
   },
 
   update(container) {
@@ -3937,6 +3945,7 @@ const LayoutSync = {
     document.documentElement.classList.toggle("sspure-tv", tv);
     const container = document.getElementById("slides-container");
     if (container) SeasonalDecorations.update(container);
+    this.observeDecorationBounds();
     this.publish("--slideshow-tv-height", `${CONFIG.tvHeightPercent}vh`);
     const page = document.querySelector(".page");
     if (!page) return;
@@ -3990,13 +3999,27 @@ const LayoutSync = {
     }
 
     const observer = new MutationObserver(() => {
-      if (!ready()) return;
       this.update();
+      if (!ready()) return;
       this.observeRows();
       observer.disconnect();
     });
     observer.observe(document.body, { childList: true, subtree: true });
     setTimeout(() => observer.disconnect(), 30000);
+  },
+
+  observeDecorationBounds() {
+    if (CONFIG.seasonalTheme === "None" || typeof ResizeObserver === "undefined") return;
+    if (!this.decorationObserver) {
+      this.decorationTargets = new WeakSet();
+      this.decorationObserver = new ResizeObserver(() => this.update());
+    }
+    document.querySelectorAll(".skinHeader, .headerTop, .headerTabs, .headerTabsSection, #slides-container, #slides-container .ss-chrome").forEach(element => {
+      if (!this.decorationTargets.has(element)) {
+        this.decorationTargets.add(element);
+        this.decorationObserver.observe(element);
+      }
+    });
   },
 
   observeRows() {
@@ -4490,6 +4513,7 @@ const initArrowNavigation = () => {
   });
 
   container.append(leftArrow, rightArrow, volumeBtn, pauseButton, settingsBtn);
+  LayoutSync.update();
 };
 
 const isTouchLayout = () =>

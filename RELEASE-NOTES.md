@@ -1,37 +1,22 @@
-# Media Bar 3.0.0.6 – Deutsche Einstellungen und kompakte Girlanden
+# Media Bar 3.0.0.7 – Mehr Abstand für die Girlande
 
-Die Plugin-Einstellungen und das persönliche Media-Bar-Menü sind jetzt auf
-Deutsch: Beschriftungen, Auswahlmöglichkeiten, Hilfetexte, Schaltflächen und
-Bedienungshinweise. Bestehende Einstellungen bleiben erhalten. Deutsche
-Ersatztexte verhindern englische Begriffe wie „Play“, falls Jellyfin keine
-passende Übersetzung liefert. Lange Beschriftungen können auf schmalen
-Bildschirmen umbrechen.
+Die saisonale Girlande wurde weiter nach unten versetzt, damit sie weder die
+Navigation im Standardlayout noch die Media-Bar-Schaltflächen in CSS-Themes
+überlagert.
 
-Die saisonale Girlande liegt jetzt als flacher Streifen am oberen Rand der
-Media Bar. Die Schnur reicht über die Breite der Bar, und die Anhänger sind
-kleiner. Ihr Seitenverhältnis bleibt auch auf schmalen Bildschirmen erhalten.
-Der Abstand berücksichtigt die tatsächlich überlappende Jellyfin-Kopfzeile.
-Dadurch wird bei einer Themenkarte unterhalb der Kopfzeile kein zusätzlicher
-großer Abstand mehr addiert. Die bestehenden Motive und Animationen bleiben
-erhalten; im TV-Modus und auf webOS erscheint weiterhin keine Girlande.
+- Ein oberer Streifen bleibt grundsätzlich frei.
+- Unter der Navigation und den oberen Media-Bar-Schaltflächen bleiben 16 Pixel Abstand.
+- Auch Schaltflächen, die erst bei Mausberührung erscheinen, werden berücksichtigt.
+- Nach dem Einfügen der Bedienelemente wird die Position erneut berechnet.
+- Größenänderungen an Kopfzeile, Navigationszeilen und Bedienelementen werden
+  beobachtet. Sichtbare Navigation in Kopfzeilen ohne eigene Höhe wird erkannt.
 
-## Update
-
-Die bisherige Repository-Adresse bleibt gültig:
+Nach dem Update Jellyfin neu starten und die Browserseite neu laden. Als
+Asset-Version `embedded` verwenden. Die bestehende Repository-Adresse gilt weiter:
 https://github.com/S3NTIN3LOne/jellyfin-plugins/releases/latest/download/manifest.json
 
-Media Bar auf 3.0.0.6 aktualisieren, Jellyfin neu starten und die Seite neu
-laden bzw. die App vollständig neu starten. Als Asset-Version `embedded`
-verwenden. File Transformation bleibt bei 3.0.0.1.
-
-## Prüfungen
-
-- Beide Release-Builds ohne Warnungen oder Fehler.
-- 13 Verhaltenstests für Titelauswahl, Timer und Servervorgaben bestanden.
-- Browserprüfungen für Halloween/Weihnachten/Aus, TV, webOS-Erkennung,
-  Bewegungsreduktion und Layoutwechsel bestanden.
-- Girlande bei 1920, 768 und 390 Pixel Breite in nachgebildetem Standardlayout
-  und Kartenlayout geprüft, einschließlich geänderter Kopfzeilenhöhe.
-- Deutsches Nutzermenü auf horizontalen Überlauf geprüft; Laden und Speichern
-  der deutschen Plugin-Einstellungen erhält Kategorien, Bibliotheken und Anzahl.
-- Die Original-Themedatei und ein echter LG-TV standen nicht zur Verfügung.
+Geprüft: 13 Verhaltenstests, Browserprüfungen für Standard- und Kartenlayout
+bei 1920/768/390 Pixeln, nachträglich hinzugefügte Bedienelemente, unsichtbare
+Hover-Schaltflächen und eine nachträglich vergrößerte Navigation. Saisonale
+Animationen, Bewegungsreduktion und TV-Ausblendung ebenfalls geprüft. Die
+konkrete CSS-Themedatei und ein echter LG-TV standen nicht zur Verfügung.

@@ -19,7 +19,7 @@ const assert = require('node:assert/strict');
       </style></head><body><header class="skinHeader">Jellyfin</header></body></html>`);
       await page.evaluate(source => {
         window.MediaBarServerConfig = { SeasonalTheme: 'Halloween' };
-        new Function(source + '\nwindow.layoutSync = LayoutSync;')();
+        new Function(source + '\nwindow.layoutSync = LayoutSync; window.addMediaBarControls = initArrowNavigation;')();
         const stage = window.slideshowPure.SlideUtils.getOrCreateSlidesContainer();
         stage.insertAdjacentHTML('beforeend', '<div class="test-content">Ein Filmabend im Herbst</div>');
       }, source);
@@ -31,18 +31,29 @@ const assert = require('node:assert/strict');
         return { stageTop:stage.top, stageLeft:stage.left, stageWidth:stage.width,
           top:garland.top, bottom:garland.bottom, wireLeft:wire.left, wireWidth:wire.width, ornamentWidth:ornament.width };
       });
-      assert.ok(Math.abs(geometry.top - (card ? geometry.stageTop + 8 : 72)) < 1);
+      assert.ok(Math.abs(geometry.top - (card ? geometry.stageTop + 64 : 80)) < 1);
       assert.ok(Math.abs(geometry.wireLeft - geometry.stageLeft) <= 2);
       assert.ok(Math.abs(geometry.wireWidth - geometry.stageWidth) <= 3, 'Cord spans the bar instead of letterboxing');
       assert.ok(geometry.ornamentWidth <= 34 && geometry.ornamentWidth >= 20);
       assert.ok(geometry.bottom - geometry.top <= 64, 'Decoration stays compact');
 
-      // Header size can change with a theme or viewport resize.
-      await page.evaluate(() => {
-        document.querySelector('.skinHeader').style.height = '110px';
-        window.layoutSync.update();
+      // Controls are created after the decoration, and may remain hidden until hover.
+      await page.evaluate(() => window.addMediaBarControls());
+      const clearance = await page.evaluate(() => {
+        const garland = document.querySelector('.ss-seasonal-garland').getBoundingClientRect();
+        const settings = document.querySelector('.ss-settings-toggle').getBoundingClientRect();
+        return garland.top - settings.bottom;
       });
-      assert.equal(await page.locator('.ss-seasonal-garland').evaluate(el => Math.round(el.getBoundingClientRect().top)), 118);
+      assert.ok(clearance >= 15, 'Garland must clear the toolbar even before hover');
+
+      // A navigation row may have a zero-height wrapper and finish sizing after startup.
+      await page.evaluate(() => {
+        window.layoutSync.init();
+        const header = document.querySelector('.skinHeader');
+        header.style.height = '0';
+        header.innerHTML = '<nav class="headerTop" style="height:190px;width:100%;position:absolute;top:0;left:0">Navigation</nav>';
+      });
+      await page.waitForFunction(() => document.querySelector('.ss-seasonal-garland').getBoundingClientRect().top >= 206);
 
       // Test the actual client settings UI, including administrator restrictions.
       await page.evaluate(() => {

@@ -2301,7 +2301,7 @@
   --ss-cord-height: clamp(14px, 1.5vw, 24px);
   --ss-ornament-size: clamp(20px, 2.4vw, 34px);
   position: absolute;
-  top: var(--ss-garland-top, 8px);
+  top: var(--ss-garland-top, 64px);
   left: 1px;
   right: 1px;
   height: calc(var(--ss-cord-height) + var(--ss-ornament-size) * 1.1);

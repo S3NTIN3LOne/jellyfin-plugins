@@ -20,7 +20,7 @@ and [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-t
 Upstream licenses are preserved in each plugin directory and release ZIP.
 Slideshow credits are preserved in the JavaScript and CSS files.
 
-## Media Bar settings (3.0.0.6)
+## Media Bar settings (3.0.0.7)
 
 Plugin and client settings are in German, including labels, help text and
 accessibility descriptions. Stored configuration values and layout identifiers
@@ -28,8 +28,10 @@ remain compatible with existing installations.
 
 Seasonal garlands now form a compact strip at the upper edge of the media bar.
 The cord follows the full container width; small ornaments retain their aspect
-ratio on narrow screens. Header overlap is measured so a full-bleed bar and a
-theme card receive the appropriate top spacing. TV/webOS remains undecorated.
+ratio on narrow screens. A reserved top strip and 16px clearance below navigation
+and upper Media Bar controls prevent overlap, including hover-hidden buttons.
+Header and control resizing is observed, including zero-height header wrappers
+with visible navigation children. TV/webOS remains undecorated.
 
 Under Dashboard > Plugins > Media Bar > Web Config:
 
@@ -108,8 +110,8 @@ to select the local SDK when necessary. The script builds each plugin version fr
 checks assembly versions and ZIP contents, and generates `manifest.json` with
 Jellyfin-compatible MD5 checksums and target ABI `12.2.0.0`.
 
-Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.6-jellyfin-12.2/`
-as assets of the GitHub release tagged `v3.0.0.6-jellyfin-12.2`. Use
+Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.7-jellyfin-12.2/`
+as assets of the GitHub release tagged `v3.0.0.7-jellyfin-12.2`. Use
 `RELEASE-NOTES.md` for the release description. The repository must be public
 so Jellyfin can fetch the manifest and packages without GitHub authentication.
 
