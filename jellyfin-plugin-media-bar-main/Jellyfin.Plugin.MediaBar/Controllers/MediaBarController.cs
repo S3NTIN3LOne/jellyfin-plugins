@@ -63,5 +63,12 @@ namespace Jellyfin.Plugin.MediaBar.Controllers
         {
             return Ok(MediaBarPlugin.Instance.Configuration.WebConfig);
         }
+
+        [HttpGet("SeasonalStatus")]
+        public ActionResult<SeasonalStatus> GetSeasonalStatus()
+        {
+            Response.Headers.CacheControl = "no-store";
+            return Ok(SeasonalSchedule.GetStatus());
+        }
     }
 }

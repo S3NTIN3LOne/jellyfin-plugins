@@ -20,7 +20,7 @@ and [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-t
 Upstream licenses are preserved in each plugin directory and release ZIP.
 Slideshow credits are preserved in the JavaScript and CSS files.
 
-## Media Bar settings (3.0.0.8)
+## Media Bar settings (3.0.0.9)
 
 Plugin and client settings are in German, including labels, help text and
 accessibility descriptions. Stored configuration values and layout identifiers
@@ -53,10 +53,19 @@ Under Dashboard > Plugins > Media Bar > Web Config:
 - An animated pumpkin/bat/ghost or bauble/star/holly garland appears near the
   top of the bar in web layout. It is never created in TV mode or webOS, is
   removed on layout changes, and stays still when reduced motion is enabled.
-  Halloween decorations appear only October 1–31, Christmas decorations only
-  December 1–31, using the client's local date. Open pages refresh at local
-  midnight and when returning to the tab. Seasonal recommendations remain
-  available year-round, including on TV.
+  Disable it independently with **Animierte saisonale Girlande anzeigen**.
+- Both recommendations and decoration follow the selected season's date window.
+  When [Jelly+](https://github.com/S3NTIN3LOne/Jellyplus) is loaded, Media Bar calls
+  its `Jellyplus.Rules.Season(DateOnly)` method on the server. The current Jelly+
+  rules use October 15–November 1 for Halloween and December 1–31 for Christmas;
+  the dates are not copied into Media Bar. Without Jelly+, fallback dates are
+  October 1–31 and December 1–31. The server's local date is authoritative.
+  Outside the window, normal selection resumes (including playlists in Client
+  mode). Server category, library and count restrictions remain in effect for
+  library queries. Open pages refresh at server midnight, at least once per
+  minute, and when returning to the tab; a season change rebuilds the slides.
+  A failed calendar request or incompatible Jelly+ API does not activate fallback
+  dates: seasonal features stay off once the last valid calendar has expired.
 
 Save settings, then restart the TV app or reload the browser. Use `embedded`
 assets to receive these features. File Transformation remains at 3.0.0.1.
@@ -68,6 +77,9 @@ and checks CSS sizing in a desktop browser; it does not emulate webOS.
 reduced motion and mode changes with the same browser dependencies.
 `node tests/mediabar-ui.cjs` checks responsive garland geometry and German
 settings, including a configuration load/save round-trip.
+`dotnet run --project tests/season-calendar/SeasonCalendar.Tests.csproj -c Release`
+checks the optional Jelly+ reflection contract, changed rules, calendar boundaries,
+fallback and failures without requiring a running Jellyfin server.
 
 ## Build
 
@@ -113,8 +125,8 @@ to select the local SDK when necessary. The script builds each plugin version fr
 checks assembly versions and ZIP contents, and generates `manifest.json` with
 Jellyfin-compatible MD5 checksums and target ABI `12.2.0.0`.
 
-Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.8-jellyfin-12.2/`
-as assets of the GitHub release tagged `v3.0.0.8-jellyfin-12.2`. Use
+Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.9-jellyfin-12.2/`
+as assets of the GitHub release tagged `v3.0.0.9-jellyfin-12.2`. Use
 `RELEASE-NOTES.md` for the release description. The repository must be public
 so Jellyfin can fetch the manifest and packages without GitHub authentication.
 

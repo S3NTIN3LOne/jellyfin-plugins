@@ -54,6 +54,45 @@ const assert = require('node:assert/strict');
         await page.close();
       }
     }
+    // The server's Jelly+ calendar overrides the browser's fallback date.
+    for (const enabled of [true, false]) {
+      const page = await browser.newPage();
+      await page.clock.install({ time: new Date('2026-07-15T12:00:00') });
+      await page.setContent('<html><body></body></html>');
+      await page.evaluate(async ({ source, enabled }) => {
+        window.MediaBarServerConfig = { SeasonalTheme: 'Halloween', EnableSeasonalGarland: enabled };
+        // Keep the real reset path, but replace network-heavy bootstrap rendering.
+        new Function(source.replace('const bootstrap = async () => {',
+          'const bootstrap = async () => { if (window.testReload) { window.testReload(); return; }'))();
+        const api = window.slideshowPure;
+        api.STATE.jellyfinData.serverAddress = 'https://server';
+        window.serverTheme = 'Halloween';
+        window.fetch = async () => ({ ok: true, json: async () => ({
+          ActiveTheme: window.serverTheme, Source: 'Jelly+', ValidUntil: Date.now() + 86400000,
+        }) });
+        await api.SeasonCalendar.refresh();
+        api.SlideUtils.getOrCreateSlidesContainer();
+        api.STATE.slideshow.hasInitialized = true;
+        api.STATE.slideshow.itemIds = ['seasonal-title'];
+        window.reloadCount = 0;
+        window.testReload = () => {
+          window.reloadCount++;
+          api.SlideUtils.getOrCreateSlidesContainer();
+          api.STATE.slideshow.hasInitialized = true;
+        };
+      }, { source, enabled });
+      assert.equal(await page.locator('.ss-seasonal-garland').count(), enabled ? 1 : 0);
+      assert.equal(await page.evaluate(() => window.slideshowPure.SeasonCalendar.activeTheme()), 'Halloween');
+      await page.evaluate(() => { window.serverTheme = 'None'; window.dispatchEvent(new Event('focus')); });
+      await page.waitForFunction(() => window.reloadCount === 1);
+      assert.equal(await page.locator('.ss-seasonal-garland').count(), 0);
+      assert.deepEqual(await page.evaluate(() => window.slideshowPure.STATE.slideshow.itemIds), []);
+      await page.evaluate(() => { window.serverTheme = 'Halloween'; window.dispatchEvent(new Event('focus')); });
+      await page.waitForFunction(() => window.reloadCount === 2);
+      assert.equal(await page.locator('.ss-seasonal-garland').count(), enabled ? 1 : 0);
+      console.log(`Jelly+ override, content reset and independent garland switch verified: ${enabled}`);
+      await page.close();
+    }
     for (const [theme, start, end] of [
       ['Halloween', '2026-09-30T23:59:59', '2026-10-31T23:59:59'],
       ['Christmas', '2026-11-30T23:59:59', '2026-12-31T23:59:59'],

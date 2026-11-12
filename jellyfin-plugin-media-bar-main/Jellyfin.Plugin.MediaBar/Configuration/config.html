@@ -87,7 +87,11 @@
                             <option value="Halloween">Halloween</option>
                             <option value="Christmas">Weihnachten</option>
                         </select>
-                        <div class="fieldDescription">Halloween: Genre „Horror“ oder Schlagwort „Halloween“. Weihnachten: Schlagwörter oder Genres „Christmas“, „Weihnachten“ oder „Xmas“. Diese Schlagwörter lassen sich im Metadaten-Editor von Jellyfin vergeben. Anzahl, Kategorie und Bibliotheken werden unten festgelegt. „Zuletzt hinzugefügt“ zeigt neueste Titel zuerst; die anderen Modi wählen zufällig aus, auch bereits gesehene Titel. Ohne passende Titel wird keine Media Bar angezeigt. Die Empfehlungen gelten ganzjährig auf allen Geräten; die animierte Girlande erscheint ausschließlich im Weblayout, nicht im TV-Modus oder auf webOS. Die Halloween-Girlande erscheint nur vom 1. bis 31. Oktober, die Weihnachtsgirlande nur vom 1. bis 31. Dezember (lokales Datum des Geräts). Beim Tageswechsel und bei Rückkehr zum Tab wird die Anzeige automatisch aktualisiert.</div>
+                        <div class="fieldDescription">Halloween: Genre „Horror“ oder Schlagwort „Halloween“. Weihnachten: Schlagwörter oder Genres „Christmas“, „Weihnachten“ oder „Xmas“. Anzahl, Kategorie und Bibliotheken werden unten festgelegt. Empfehlungen und Girlande sind nur im Zeitraum der gewählten Saison aktiv. Wenn Jelly+ geladen ist, gelten dessen Datumsregeln. Ohne Jelly+ gilt Halloween vom 1. bis 31. Oktober und Weihnachten vom 1. bis 31. Dezember. Maßgeblich ist das Serverdatum. Außerhalb der Saison wird die normale Auswahl angezeigt. Innerhalb der Saison werden auch bereits gesehene Titel berücksichtigt; ohne passende Titel bleibt die Media Bar leer. Offene Seiten prüfen die Saison regelmäßig und bei Rückkehr zum Tab.</div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label><input id="enableSeasonalGarland" type="checkbox" is="emby-checkbox" /><span>Animierte saisonale Girlande anzeigen</span></label>
+                        <div class="fieldDescription">Unabhängig von den saisonalen Empfehlungen abschaltbar. Die Girlande erscheint nur im Weblayout innerhalb der gewählten Saison, niemals im TV-Modus oder auf webOS.</div>
                     </div>
                     <div class="inputContainer">
                         <label class="inputLabel" for="itemCount">Anzahl der Titel</label>
@@ -260,6 +264,7 @@
                         WebConfig: {
                             SelectionMode: document.querySelector('#selectionMode').value,
                             SeasonalTheme: document.querySelector('#seasonalTheme').value,
+                            EnableSeasonalGarland: document.querySelector('#enableSeasonalGarland').checked,
                             ItemCount: parseInt(document.querySelector('#itemCount').value, 10),
                             MediaCategory: document.querySelector('#mediaCategory').value,
                             LibraryNames: document.querySelector('#libraryNames').value.split(/\r?\n/).map(name => name.trim()).filter(Boolean),
@@ -301,6 +306,7 @@
                         .then(function (config) {
                             document.querySelector('#selectionMode').value = config.WebConfig.SelectionMode || 'Client';
                             document.querySelector('#seasonalTheme').value = config.WebConfig.SeasonalTheme || 'None';
+                            document.querySelector('#enableSeasonalGarland').checked = config.WebConfig.EnableSeasonalGarland !== false;
                             document.querySelector('#itemCount').value = config.WebConfig.ItemCount || 10;
                             document.querySelector('#mediaCategory').value = config.WebConfig.MediaCategory || 'All';
                             document.querySelector('#libraryNames').value = (config.WebConfig.LibraryNames || []).join('\n');

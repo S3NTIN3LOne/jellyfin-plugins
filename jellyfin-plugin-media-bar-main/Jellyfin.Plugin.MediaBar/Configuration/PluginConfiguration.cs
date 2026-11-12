@@ -47,6 +47,7 @@ namespace Jellyfin.Plugin.MediaBar.Configuration
         // Client preserves existing client preferences and playlist selection.
         public string SelectionMode { get; set; } = "Client";
         public string SeasonalTheme { get; set; } = "None";
+        public bool EnableSeasonalGarland { get; set; } = true;
         public int ItemCount { get; set; } = 10;
         public string MediaCategory { get; set; } = "All";
         public string[] LibraryNames { get; set; } = Array.Empty<string>();

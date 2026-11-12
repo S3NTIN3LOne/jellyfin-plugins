@@ -31,6 +31,7 @@ const CONFIG = {
   libraries: [],
   selectionMode: "Client",
   seasonalTheme: "None",
+  enableSeasonalGarland: true,
   mediaCategory: "All",
   tvHeightPercent: 50,
 
@@ -390,6 +391,7 @@ if (serverConfig) {
   }
   lockedConfigKeys.add("selectionMode");
   lockedConfigKeys.add("seasonalTheme");
+  lockedConfigKeys.add("enableSeasonalGarland");
   lockedConfigKeys.add("tvHeightPercent");
 }
 
@@ -852,6 +854,9 @@ const bootstrap = async () => {
 
     await initLocalization();
     mark("localization-ready");
+
+    await SeasonCalendar.refresh();
+    SeasonCalendar.watch();
 
     await slidesInit();
 
@@ -1578,7 +1583,7 @@ const ApiUtils = {
 
   async fetchItemPage(types, limit, library = null, seasonalFilter = "") {
     const latest = CONFIG.selectionMode === "Latest";
-    const seasonal = CONFIG.seasonalTheme !== "None";
+    const seasonal = SeasonCalendar.activeTheme() !== "None";
     const response = await fetch(
       `${STATE.jellyfinData.serverAddress}/Items` +
         `?IncludeItemTypes=${types}&Recursive=true&UserId=${encodeURIComponent(STATE.jellyfinData.userId)}` +
@@ -1618,8 +1623,8 @@ const ApiUtils = {
   },
 
   async fetchAcrossLibraries(types, limit, libraries) {
-    if (CONFIG.seasonalTheme !== "None") {
-      const filters = CONFIG.seasonalTheme === "Halloween"
+    if (SeasonCalendar.activeTheme() !== "None") {
+      const filters = SeasonCalendar.activeTheme() === "Halloween"
         ? ["&Genres=Horror", "&Tags=Halloween"]
         : ["&Genres=Christmas%7CWeihnachten%7CXmas", "&Tags=Christmas%7CWeihnachten%7CXmas"];
       const scopes = libraries.length ? libraries : [null];
@@ -3813,7 +3818,7 @@ const SlideshowManager = {
 
       mark("items-fetch-start");
 
-      const listed = CONFIG.selectionMode === "Client" && CONFIG.seasonalTheme === "None"
+      const listed = CONFIG.selectionMode === "Client" && SeasonCalendar.activeTheme() === "None"
         ? await ApiUtils.fetchListEntries() : EMPTY_LIST;
       let items =
         listed.ids.length || listed.filters.length
@@ -3871,30 +3876,86 @@ const SlideshowManager = {
   },
 };
 
-const SeasonalDecorations = {
-  isInSeason(date = new Date()) {
-    const month = date.getMonth();
-    return (CONFIG.seasonalTheme === "Halloween" && month === 9) ||
-      (CONFIG.seasonalTheme === "Christmas" && month === 11);
+const SeasonCalendar = {
+  status: null,
+  pending: null,
+  appliedTheme: null,
+
+  activeTheme(date = new Date()) {
+    let theme = "None";
+    if (this.status) {
+      if (date.getTime() < this.status.validUntil) theme = this.status.activeTheme;
+    } else if (!STATE.jellyfinData.serverAddress) {
+      // Standalone assets without a server use the documented fallback calendar.
+      theme = date.getMonth() === 9 ? "Halloween" : date.getMonth() === 11 ? "Christmas" : "None";
+    }
+    return theme === CONFIG.seasonalTheme ? theme : "None";
   },
 
-  watchDate() {
+  async refresh() {
+    if (CONFIG.seasonalTheme === "None" || !STATE.jellyfinData.serverAddress) return;
+    if (this.pending) return this.pending;
+    this.pending = (async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(`${STATE.jellyfinData.serverAddress}/MediaBar/SeasonalStatus`, {
+          headers: ApiUtils.getAuthHeaders(), cache: "no-store", signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`Season calendar: ${response.status}`);
+        const data = await response.json();
+        const activeTheme = data.ActiveTheme ?? data.activeTheme;
+        const validUntil = data.ValidUntil ?? data.validUntil;
+        if (!["None", "Halloween", "Christmas"].includes(activeTheme) || !Number.isFinite(validUntil))
+          throw new Error("Invalid season calendar");
+        this.status = { activeTheme, validUntil, source: data.Source ?? data.source };
+      } catch (error) {
+        // Network failure is not evidence that Jelly+ is absent. Expired data stays off.
+        console.warn("Media Bar: Saisonzeitraum konnte nicht aktualisiert werden.", error.message);
+      } finally {
+        clearTimeout(timeout);
+      }
+    })();
+    try { await this.pending; } finally { this.pending = null; }
+  },
+
+  watch() {
     if (this.dateWatchAttached || CONFIG.seasonalTheme === "None") return;
     this.dateWatchAttached = true;
-    const refresh = () => {
+    this.appliedTheme = this.activeTheme();
+    const refresh = async () => {
       clearTimeout(this.dateTimer);
+      await this.refresh();
       const container = document.getElementById("slides-container");
-      if (container) this.update(container);
+      if (container) SeasonalDecorations.update(container);
+      const theme = this.activeTheme();
+      if (theme !== this.appliedTheme && !STATE.slideshow.isBootstrapping && !STATE.slideshow.isLoading) {
+        this.appliedTheme = theme;
+        if (STATE.slideshow.hasInitialized) {
+          resetSlideshowState();
+          await bootstrap();
+        }
+      }
       const now = new Date();
-      // Construct the next local midnight so daylight-saving changes are respected.
       const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      this.dateTimer = setTimeout(refresh, midnight.getTime() - now.getTime());
+      const boundary = this.status?.validUntil > now.getTime() ? this.status.validUntil : midnight.getTime();
+      // Poll for server setting/date changes, including after a sleeping tab resumes.
+      clearTimeout(this.dateTimer);
+      this.dateTimer = setTimeout(refresh, Math.max(1, Math.min(60000, boundary - now.getTime())));
     };
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) refresh();
     });
-    refresh();
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+    this.dateTimer = setTimeout(refresh, Math.max(1, Math.min(60000, (this.status?.validUntil || midnight) - now.getTime())));
+  },
+};
+
+const SeasonalDecorations = {
+  isInSeason(date = new Date()) {
+    return SeasonCalendar.activeTheme(date) !== "None";
   },
 
   isTv() {
@@ -3922,9 +3983,9 @@ const SeasonalDecorations = {
   },
 
   update(container) {
-    this.watchDate();
+    SeasonCalendar.watch();
     const existing = container.querySelector(".ss-seasonal-garland");
-    if (!this.isInSeason() || this.isTv()) {
+    if (!CONFIG.enableSeasonalGarland || !this.isInSeason() || this.isTv()) {
       existing?.remove();
       return;
     }
@@ -4645,6 +4706,7 @@ window.slideshowPure = {
   SlideUtils,
   ApiUtils,
   SeasonalDecorations,
+  SeasonCalendar,
   BlurHash,
   SlideCreator,
   SlideshowManager,

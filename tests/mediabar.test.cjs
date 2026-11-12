@@ -9,7 +9,7 @@ function load(server = {}, stored = {}, userAgent = 'browser') {
   const classes = new Set();
   const styles = {};
   const context = vm.createContext({
-    console, URLSearchParams, setTimeout, clearTimeout,
+    console, URLSearchParams, setTimeout, clearTimeout, AbortController,
     navigator: { userAgent },
     window: { MediaBarServerConfig: server, location: { hash: '', search: '' } },
     document: {
@@ -24,6 +24,7 @@ function load(server = {}, stored = {}, userAgent = 'browser') {
   // Suppress automatic browser startup; exercise the actual config and API code.
   vm.runInContext(source.replace('\nbootstrap();', '\n') + '\nthis.layoutSync = LayoutSync;', context);
   const api = context.window.slideshowPure;
+  api.SeasonCalendar.status = { activeTheme: server.SeasonalTheme || 'None', validUntil: Date.now() + 86400000, source: 'Fallback' };
   Object.assign(api.STATE.jellyfinData, { userId: 'user', accessToken: 'token', serverAddress: 'https://server' });
   return { api, context, classes, styles };
 }
@@ -144,6 +145,46 @@ test('TV sizing detects webOS and leaves desktop unchanged', () => {
 test('season is disabled by default and cannot be enabled by local preferences', () => {
   const { api } = load({}, { seasonalTheme: 'Halloween' });
   assert.equal(api.CONFIG.seasonalTheme, 'None');
+});
+
+test('garland switch is server controlled and does not disable recommendations', () => {
+  const { api } = load({ SeasonalTheme: 'Halloween', EnableSeasonalGarland: false }, { enableSeasonalGarland: true });
+  assert.equal(api.CONFIG.enableSeasonalGarland, false);
+  assert.equal(api.SeasonCalendar.activeTheme(), 'Halloween');
+});
+
+test('out-of-season requests use normal library selection without seasonal filters', async () => {
+  const { api, context } = load({ SeasonalTheme: 'Halloween', SelectionMode: 'Latest', ItemCount: 7 });
+  api.SeasonCalendar.status.activeTheme = 'None';
+  const requests = [];
+  context.fetch = async url => {
+    requests.push(new URL(url));
+    return { ok: true, json: async () => ({ Items: [{ Id: 'normal' }] }) };
+  };
+  assert.equal((await api.ApiUtils.fetchItemsFromServer())[0].Id, 'normal');
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].searchParams.has('Tags'), false);
+  assert.equal(requests[0].searchParams.has('Genres'), false);
+  assert.equal(requests[0].searchParams.get('Limit'), '7');
+  assert.equal(requests[0].searchParams.get('SortBy'), 'DateCreated,SortName');
+});
+
+test('calendar uses server result, supports JSON casing and never falls back on network errors', async () => {
+  const { api, context } = load({ SeasonalTheme: 'Halloween' });
+  context.fetch = async (url, options) => {
+    assert.equal(url, 'https://server/MediaBar/SeasonalStatus');
+    assert.equal(options.cache, 'no-store');
+    return { ok: true, json: async () => ({ activeTheme: 'None', source: 'Jelly+', validUntil: Date.now() + 60000 }) };
+  };
+  await api.SeasonCalendar.refresh();
+  assert.equal(api.SeasonCalendar.activeTheme(), 'None');
+  context.fetch = async () => ({ ok: true, json: async () => ({ ActiveTheme: 'Halloween', Source: 'Jelly+', ValidUntil: Date.now() + 60000 }) });
+  await api.SeasonCalendar.refresh();
+  assert.equal(api.SeasonCalendar.activeTheme(), 'Halloween');
+  api.SeasonCalendar.status.validUntil = Date.now() - 1;
+  context.fetch = async () => { throw new Error('offline'); };
+  await api.SeasonCalendar.refresh();
+  assert.equal(api.SeasonCalendar.activeTheme(), 'None');
 });
 
 test('season takes server category, libraries and count even in client selection mode', () => {
