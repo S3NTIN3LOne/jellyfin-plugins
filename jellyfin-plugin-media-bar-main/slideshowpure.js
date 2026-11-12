@@ -3872,6 +3872,31 @@ const SlideshowManager = {
 };
 
 const SeasonalDecorations = {
+  isInSeason(date = new Date()) {
+    const month = date.getMonth();
+    return (CONFIG.seasonalTheme === "Halloween" && month === 9) ||
+      (CONFIG.seasonalTheme === "Christmas" && month === 11);
+  },
+
+  watchDate() {
+    if (this.dateWatchAttached || CONFIG.seasonalTheme === "None") return;
+    this.dateWatchAttached = true;
+    const refresh = () => {
+      clearTimeout(this.dateTimer);
+      const container = document.getElementById("slides-container");
+      if (container) this.update(container);
+      const now = new Date();
+      // Construct the next local midnight so daylight-saving changes are respected.
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      this.dateTimer = setTimeout(refresh, midnight.getTime() - now.getTime());
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refresh();
+    });
+    refresh();
+  },
+
   isTv() {
     return !!document.querySelector(".layout-tv") || /webos|web0s|netcast/i.test(navigator.userAgent);
   },
@@ -3897,8 +3922,9 @@ const SeasonalDecorations = {
   },
 
   update(container) {
+    this.watchDate();
     const existing = container.querySelector(".ss-seasonal-garland");
-    if (CONFIG.seasonalTheme === "None" || this.isTv()) {
+    if (!this.isInSeason() || this.isTv()) {
       existing?.remove();
       return;
     }

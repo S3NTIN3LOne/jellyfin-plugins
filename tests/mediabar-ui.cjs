@@ -11,6 +11,7 @@ const assert = require('node:assert/strict');
     const css = fs.readFileSync('jellyfin-plugin-media-bar-main/slideshowpure.css', 'utf8');
     for (const width of [1920, 768, 390]) for (const card of [false, true]) {
       const page = await browser.newPage({ viewport: { width, height: 1080 } });
+      await page.clock.install({ time: new Date('2026-10-15T12:00:00') });
       await page.setContent(`<html><head><style>${css}
         body { margin:0; background:#101927; }
         .skinHeader { position:fixed; top:0; left:0; right:0; height:64px; z-index:100; background:#1a2433; }

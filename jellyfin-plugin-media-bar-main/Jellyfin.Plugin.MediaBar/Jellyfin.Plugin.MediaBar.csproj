@@ -10,7 +10,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-        <Version>3.0.0.7</Version>
+        <Version>3.0.0.8</Version>
     </PropertyGroup>
 
     <ItemGroup>

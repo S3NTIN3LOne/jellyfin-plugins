@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$releaseVersion = '3.0.0.7'
+$releaseVersion = '3.0.0.8'
 $tag = "v$releaseVersion-jellyfin-12.2"
 $output = Join-Path $root "artifacts/$tag"
 New-Item -ItemType Directory -Path $output -Force | Out-Null
@@ -74,7 +74,7 @@ foreach ($plugin in $plugins) {
             category = 'General'
             versions = @([ordered]@{
                 version = $version
-                changelog = if ($plugin.Name -eq 'Media Bar') { 'Girlande weiter nach unten versetzt: Abstand unter Navigation und oberen Media-Bar-Bedienelementen, auch bei nachgeladenen Kopfzeilen und bei Mausberührung eingeblendeten Schaltflächen. Nach dem Update Jellyfin neu starten und Clients neu laden.' } else { 'File Transformation for Jellyfin 12.2.0 (unchanged).' }
+                changelog = if ($plugin.Name -eq 'Media Bar') { 'Datumsprüfung für Girlanden: Halloween nur im Oktober, Weihnachten nur im Dezember. Automatische Aktualisierung beim Tageswechsel und bei Rückkehr zum Tab. Nach dem Update Jellyfin neu starten und Clients neu laden.' } else { 'File Transformation for Jellyfin 12.2.0 (unchanged).' }
                 targetAbi = '12.2.0.0'
                 sourceUrl = "https://github.com/$Repository/releases/download/$tag/$asset"
                 checksum = $checksum

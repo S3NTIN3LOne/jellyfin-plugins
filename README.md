@@ -20,7 +20,7 @@ and [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-t
 Upstream licenses are preserved in each plugin directory and release ZIP.
 Slideshow credits are preserved in the JavaScript and CSS files.
 
-## Media Bar settings (3.0.0.7)
+## Media Bar settings (3.0.0.8)
 
 Plugin and client settings are in German, including labels, help text and
 accessibility descriptions. Stored configuration values and layout identifiers
@@ -53,7 +53,10 @@ Under Dashboard > Plugins > Media Bar > Web Config:
 - An animated pumpkin/bat/ghost or bauble/star/holly garland appears near the
   top of the bar in web layout. It is never created in TV mode or webOS, is
   removed on layout changes, and stays still when reduced motion is enabled.
-  Seasonal content itself remains available on TV.
+  Halloween decorations appear only October 1–31, Christmas decorations only
+  December 1–31, using the client's local date. Open pages refresh at local
+  midnight and when returning to the tab. Seasonal recommendations remain
+  available year-round, including on TV.
 
 Save settings, then restart the TV app or reload the browser. Use `embedded`
 assets to receive these features. File Transformation remains at 3.0.0.1.
@@ -110,8 +113,8 @@ to select the local SDK when necessary. The script builds each plugin version fr
 checks assembly versions and ZIP contents, and generates `manifest.json` with
 Jellyfin-compatible MD5 checksums and target ABI `12.2.0.0`.
 
-Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.7-jellyfin-12.2/`
-as assets of the GitHub release tagged `v3.0.0.7-jellyfin-12.2`. Use
+Publish both ZIPs and `manifest.json` from `artifacts/v3.0.0.8-jellyfin-12.2/`
+as assets of the GitHub release tagged `v3.0.0.8-jellyfin-12.2`. Use
 `RELEASE-NOTES.md` for the release description. The repository must be public
 so Jellyfin can fetch the manifest and packages without GitHub authentication.
 
